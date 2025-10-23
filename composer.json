@@ -1,0 +1,37 @@
+{
+    "name": "zoker/filament-multisite",
+    "description": "Multisite plugin for laravel with Filament managing",
+    "type": "library",
+    "require": {
+        "filament/filament": "^3.3",
+        "spatie/laravel-package-tools": "^1.92",
+        "filament/spatie-laravel-translatable-plugin": "^3.3",
+        "laravel/framework": "^12.0",
+        "php": "^8.4"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Zoker\\FilametMultisite\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Maksim",
+            "email": "zokermm@gmail.com",
+            "homepage": "https://github.com/zoker68"
+        }
+    ],
+    "minimum-stability": "dev",
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Zoker\\FilamentMultisite\\Providers\\FilamentMultisiteRouteServiceProvider",
+                "Zoker\\FilamentMultisite\\Providers\\FilamentMultisiteServiceProvider"
+            ]
+        },
+        "branch-alias": {
+            "dev-master": "1-dev"
+        }
+    }
+}

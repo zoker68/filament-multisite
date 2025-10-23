@@ -1,0 +1,52 @@
+<?php
+
+namespace Zoker\FilamentMultisite\Http\Middleware;
+
+use App;
+use Config;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\URL;
+use Zoker\FilamentMultisite\Models\Site;
+
+class SetLocaleMiddleware
+{
+    public function handle($request, \Closure $next)
+    {
+        $host = $this->getHost();
+        $prefix = request()->segment(1);
+
+        $sitesForHost = Site::query()
+            ->where('domain', $host)
+            ->where(function (Builder $query) use ($prefix) {
+                $query->where('prefix', $prefix)->orWhereNull('prefix');
+            })
+            ->get();
+
+        $activeSite = $sitesForHost->firstWhere('prefix', $prefix) ?? $sitesForHost->firstWhere('prefix', null);
+
+        if (! $activeSite || ! $activeSite->is_active) {
+            abort(404, 'Site not found');
+        }
+
+        app()->instance('currentSite', $activeSite);
+        //        dd(app('currentSite'));
+
+        App::setLocale($activeSite->locale);
+        Config::set('app.locale', $activeSite->locale);
+
+        URL::defaults(['multisite_prefix' => $prefix]);
+
+        return $next($request);
+    }
+
+    private function getHost(): ?string
+    {
+        $defaultHost = parse_url(config('app.url'))['host'];
+
+        if ($defaultHost == request()->getHost()) {
+            return null;
+        }
+
+        return request()->getHost();
+    }
+}
