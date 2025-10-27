@@ -12,6 +12,17 @@ class FilamentMultisiteServiceProvider extends PackageServiceProvider
         $package->name('filament-multisite')
             ->hasMigrations([
                 'create_sites_table',
-            ]);
+            ])
+            ->hasTranslations();
+    }
+
+    public function bootingPackage(): void
+    {
+        $this->loadHelpers();
+    }
+
+    private function loadHelpers(): void
+    {
+        require_once __DIR__ . '/../helpers.php';
     }
 }

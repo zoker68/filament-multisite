@@ -29,12 +29,15 @@ class SetLocaleMiddleware
         }
 
         app()->instance('currentSite', $activeSite);
-        //        dd(app('currentSite'));
 
         App::setLocale($activeSite->locale);
         Config::set('app.locale', $activeSite->locale);
 
-        URL::defaults(['multisite_prefix' => $prefix]);
+        if ($activeSite->prefix) {
+            URL::defaults(['multisite_prefix' => $activeSite->prefix]);
+        }
+
+        $request->route()->forgetParameter('multisite_prefix');
 
         return $next($request);
     }
