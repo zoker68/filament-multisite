@@ -16,11 +16,13 @@ class SetLocaleMiddleware
         $prefix = request()->segment(1);
 
         $sitesForHost = Site::query()
-            ->where('domain', $host)
+            ->where('domain', $host)->orWhereNull('domain')
             ->where(function (Builder $query) use ($prefix) {
                 $query->where('prefix', $prefix)->orWhereNull('prefix');
             })
             ->get();
+
+        $sitesForHost = $sitesForHost->where('domain', $host) ?? $sitesForHost->whereNull('domain');
 
         $activeSite = $sitesForHost->firstWhere('prefix', $prefix) ?? $sitesForHost->firstWhere('prefix', null);
 

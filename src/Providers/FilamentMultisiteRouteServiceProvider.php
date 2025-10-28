@@ -35,11 +35,13 @@ class FilamentMultisiteRouteServiceProvider extends ServiceProvider
         });
 
         Route::macro('translated', function (callable $routes) {
-            foreach (FilamentMultisiteRouteServiceProvider::getRouteTranslatableLocales() as $locale) {
-                app()->setLocale($locale);
+            Route::middleware(SetLocaleMiddleware::class)->group(function () use ($routes) {
+                foreach (FilamentMultisiteRouteServiceProvider::getRouteTranslatableLocales() as $locale) {
+                    app()->setLocale($locale);
 
-                Route::name($locale . '.')->group($routes);
-            }
+                    Route::name($locale . '.')->group($routes);
+                }
+            });
         });
 
     }
