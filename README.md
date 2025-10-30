@@ -106,10 +106,12 @@ The package includes middleware to automatically set the current site based on t
 
 ```php
 // In your route group
-Route::middleware(['web', 'multisite'])->group(function () {
+Route::middleware([\Zoker\FilamentMultisite\MultisiteMiddleware::class])->group(function () {
     // Your routes here
 });
 ```
+
+or add the middleware to the `web` middleware group:
 
 ## Events
 

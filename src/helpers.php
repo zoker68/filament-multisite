@@ -5,11 +5,11 @@ use Zoker\FilamentMultisite\Models\Site;
 
 function multisite_route(string $name, mixed $parameters = [], bool $absolute = true, ?Site $site = null, ?string $locale = null): string
 {
-    if (! isset($site)) {
-        $site = SiteManager::getCurrentSite();
-    }
+    $site ??= SiteManager::getCurrentSite();
 
-    if ($locale && Route::has('multisite.' . $locale . '.' . $name)) {
+    $locale ??= $site->locale;
+
+    if ($locale && $site->prefix && Route::has('multisite.' . $locale . '.' . $name)) {
         return route('multisite.' . $locale . '.' . $name, $parameters, $absolute);
     } elseif ($locale && Route::has($locale . '.' . $name)) {
         return route($locale . '.' . $name, $parameters, $absolute);
