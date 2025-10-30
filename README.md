@@ -4,11 +4,11 @@ A powerful package for managing multiple sites within a single Laravel Filament 
 
 ## Features
 
-- 🏗️ Multi-site route management
-- 🌍 Built-in localization support
-- 🔗 Easy link generation with `multisite_route()`
-- 🏢 Site management with `SiteManager`
-- 🎭 Seamless Filament integration
+- Multi-site route management
+- Built-in localization support
+- Multisite link generation
+- Site management
+- Filament integration
 
 ## Installation
 
