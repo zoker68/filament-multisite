@@ -4,7 +4,7 @@ namespace Zoker\FilamentMultisite\Providers;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
-use Zoker\FilamentMultisite\Http\Middleware\SetLocaleMiddleware;
+use Zoker\FilamentMultisite\Http\Middleware\MultisiteMiddleware;
 use Zoker\FilamentMultisite\Models\Site;
 
 class FilamentMultisiteRouteServiceProvider extends ServiceProvider
@@ -20,7 +20,7 @@ class FilamentMultisiteRouteServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Route::macro('multisite', function (callable $routes) {
-            Route::middleware(SetLocaleMiddleware::class)->group(function () use ($routes) {
+            Route::middleware(MultisiteMiddleware::class)->group(function () use ($routes) {
 
                 $availablePrefixes = FilamentMultisiteRouteServiceProvider::getMultisiteAvailablePrefixes();
                 if (count($availablePrefixes)) {
@@ -35,7 +35,7 @@ class FilamentMultisiteRouteServiceProvider extends ServiceProvider
         });
 
         Route::macro('translated', function (callable $routes) {
-            Route::middleware(SetLocaleMiddleware::class)->group(function () use ($routes) {
+            Route::middleware(MultisiteMiddleware::class)->group(function () use ($routes) {
                 foreach (FilamentMultisiteRouteServiceProvider::getRouteTranslatableLocales() as $locale) {
                     app()->setLocale($locale);
 

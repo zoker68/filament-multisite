@@ -4,7 +4,7 @@ namespace Zoker\FilamentMultisite\Http\Middleware;
 
 use Zoker\FilamentMultisite\Facades\SiteManager;
 
-class SetLocaleMiddleware
+class MultisiteMiddleware
 {
     public function handle($request, \Closure $next)
     {
