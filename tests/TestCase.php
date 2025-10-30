@@ -5,6 +5,7 @@ namespace Zoker\FilamentMultisite\Tests;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Orchestra\Testbench\TestCase as Orchestra;
+use Zoker\FilamentMultisite\Facades\SiteManager;
 use Zoker\FilamentMultisite\Models\Site;
 use Zoker\FilamentMultisite\Providers\FilamentMultisiteRouteServiceProvider;
 
@@ -59,7 +60,7 @@ class TestCase extends Orchestra
             Route::get('test', function () {
                 return response()->json([
                     'locale' => app()->getLocale(),
-                    'prefix' => app('currentSite')->prefix,
+                    'prefix' => SiteManager::getCurrentSite()->prefix,
                 ]);
             })->name('test.route');
         });

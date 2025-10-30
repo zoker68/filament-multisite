@@ -49,3 +49,14 @@ Use `multisite_route()` instead of `route()`
 ```php
 multisite_route('route', ['slug' => 'slug'])
 ```
+## Current site
+#### Facade
+```php
+\Zoker\FilamentMultisite\Facades\SiteManager::getCurrentSite();
+```
+#### Helper
+```php
+getCurrentSite();
+```
+
+

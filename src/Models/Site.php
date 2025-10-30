@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Zoker\FilamentMultisite\Database\Factories\SiteFactory;
 use Zoker\FilamentMultisite\Observers\SiteObserver;
 
@@ -14,6 +15,8 @@ use Zoker\FilamentMultisite\Observers\SiteObserver;
 class Site extends Model
 {
     use HasFactory;
+
+    const string SITES_FOR_DOMAIN_CACHE_KEY = 'multisite::sites_for_domain.';
 
     protected $fillable = ['code', 'name', 'domain', 'prefix', 'locale', 'is_active'];
 
@@ -26,5 +29,15 @@ class Site extends Model
     protected static function newFactory()
     {
         return SiteFactory::new();
+    }
+
+    public static function getForDomain(?string $domain): ?Collection
+    {
+        return cache()->rememberForever(self::SITES_FOR_DOMAIN_CACHE_KEY . $domain, fn () => Site::where('domain', $domain)->get());
+    }
+
+    public function clearCache(): void
+    {
+        cache()->forget(self::SITES_FOR_DOMAIN_CACHE_KEY . $this->domain);
     }
 }

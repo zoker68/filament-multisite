@@ -11,14 +11,14 @@ class SiteTest extends TestCase
     {
         $site = $this->createSite([
             'domain' => 'example.com',
-            'prefix' => 'en',
+            'prefix' => 'eng',
             'locale' => 'en',
             'is_active' => true,
         ]);
 
         $this->assertInstanceOf(Site::class, $site);
         $this->assertEquals('example.com', $site->domain);
-        $this->assertEquals('en', $site->prefix);
+        $this->assertEquals('eng', $site->prefix);
         $this->assertEquals('en', $site->locale);
         $this->assertTrue($site->is_active);
     }

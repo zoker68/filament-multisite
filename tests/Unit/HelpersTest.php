@@ -4,6 +4,7 @@ namespace Zoker\FilamentMultisite\Tests\Unit;
 
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Route;
+use Zoker\FilamentMultisite\Facades\SiteManager;
 use Zoker\FilamentMultisite\Models\Site;
 use Zoker\FilamentMultisite\Tests\TestCase;
 
@@ -16,23 +17,14 @@ class HelpersTest extends TestCase
 
         Site::truncate();
         $this->site = $this->createActiveSite();
+        $this->registerTestMultisiteRoutes();
     }
 
     public function test_it_generates_route_without_locale_parameter()
     {
-        // Set up test routes
-        Route::multisite(function () {
-            Route::get('/test-route', function () {
-                return response()->json([
-                    'multisite_route' => multisite_route('test.route'),
-                ]);
-            })->name('test.route');
-        });
-
-        $this->get($this->site->prefix . '/test-route')
-            ->assertJson([
-                'multisite_route' => config('app.url') . '/' . $this->site->prefix . '/test-route',
-            ]);
+        SiteManager::setCurrentSite($this->site);
+        $route = multisite_route('test.route');
+        $this->assertEquals(config('app.url') . '/' . $this->site->prefix . '/test', $route);
     }
 
     public function test_it_generates_route_with_specific_locale_with_multisite_prefix()
@@ -53,15 +45,13 @@ class HelpersTest extends TestCase
             });
         });
 
-        $this->get('/' . $this->site->prefix . '/path')->assertJson([
-            'route_' . $this->site->locale => config('app.url') . '/' . $this->site->prefix . '/path',
-            'route_' . $site2->locale => config('app.url') . '/' . $this->site->prefix . '/pot',
-        ]);
+        SiteManager::setCurrentSite($this->site);
+        $route = multisite_route('test.route', locale: $this->site->locale);
+        $this->assertEquals(config('app.url') . '/' . $this->site->prefix . '/path', $route);
 
-        $this->get('/' . $site2->prefix . '/pot')->assertJson([
-            'route_' . $this->site->locale => config('app.url') . '/' . $site2->prefix . '/path',
-            'route_' . $site2->locale => config('app.url') . '/' . $site2->prefix . '/pot',
-        ]);
+        SiteManager::setCurrentSite($site2);
+        $route = multisite_route('test.route', locale: $site2->locale);
+        $this->assertEquals(config('app.url') . '/' . $site2->prefix . '/pot', $route);
     }
 
     public function test_it_generates_route_with_specific_locale_without_multisite_prefix()
@@ -94,10 +84,10 @@ class HelpersTest extends TestCase
             ]);
         })->name('regular.route');
 
-        $this->get('/regular-route')
-            ->assertJson([
-                'route' => route('regular.route'),
-            ]);
+        SiteManager::setCurrentSite($this->site);
+
+        $this->assertEquals(route('regular.route'), multisite_route('regular.route'));
+
     }
 
     public function test_it_handles_route_parameters()
@@ -115,19 +105,10 @@ class HelpersTest extends TestCase
 
     public function test_it_handles_absolute_and_relative_urls()
     {
-        Route::multisite(function () {
-            Route::get('test-route', function () {
-                return response()->json([
-                    'absolute' => multisite_route('test.route'),
-                    'relative' => multisite_route('test.route', [], false),
-                ]);
-            })->name('test.route');
-        });
+        SiteManager::setCurrentSite($this->site);
 
-        $this->get('/' . $this->site->prefix . '/test-route')->assertJson([
-            'absolute' => config('app.url') . '/' . $this->site->prefix . '/test-route',
-            'relative' => '/' . $this->site->prefix . '/test-route',
-        ]);
+        $this->assertEquals(config('app.url') . '/' . $this->site->prefix . '/test', multisite_route('test.route'));
+        $this->assertEquals('/' . $this->site->prefix . '/test', multisite_route('test.route', [], false));
     }
 
     public function test_it_handles_sites_without_prefix()
@@ -144,8 +125,14 @@ class HelpersTest extends TestCase
             })->name('test.route');
         });
 
-        $this->get('/test-route')->assertJson([
-            'route' => config('app.url') . '/test-route',
-        ]);
+        SiteManager::setCurrentSite($siteWithoutPrefix);
+
+        $this->assertEquals(config('app.url') . '/test', multisite_route('test.route'));
+    }
+
+    public function test_it_handles_current_site_helper()
+    {
+        SiteManager::setCurrentSite($this->site);
+        $this->assertEquals($this->site, currentSite());
     }
 }

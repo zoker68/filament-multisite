@@ -1,11 +1,12 @@
 <?php
 
+use Zoker\FilamentMultisite\Facades\SiteManager;
 use Zoker\FilamentMultisite\Models\Site;
 
 function multisite_route(string $name, mixed $parameters = [], bool $absolute = true, ?Site $site = null, ?string $locale = null): string
 {
-    if (! isset($site) && app()->has('currentSite')) {
-        $site = app('currentSite');
+    if (! isset($site)) {
+        $site = SiteManager::getCurrentSite();
     }
 
     if ($locale && Route::has('multisite.' . $locale . '.' . $name)) {
@@ -26,4 +27,9 @@ function multisite_route(string $name, mixed $parameters = [], bool $absolute = 
     }
 
     return route($name, $parameters, $absolute);
+}
+
+function currentSite(): ?Site
+{
+    return SiteManager::getCurrentSite();
 }
