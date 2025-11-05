@@ -111,7 +111,42 @@ Route::middleware([\Zoker\FilamentMultisite\MultisiteMiddleware::class])->group(
 });
 ```
 
-or add the middleware to the `web` middleware group:
+or add the middleware to the `web` middleware group.
+
+### Translatable Models
+
+Add the `ModelHasTranslations` trait to your model and define the translatable attributes:
+
+```php
+use Zoker\FilamentMultisite\Traits\Translatable\ModelHasTranslations;
+
+class YourModel extends Model
+{
+    use ModelHasTranslations;
+
+    public array $translatable = ['attribute'];
+}
+```
+
+## SiteSwitcher
+
+Add the `SiteSwitcher` action to your Filament resources:
+
+```php
+use Zoker\FilamentMultisite\Filament\Actions\SiteSwitcher;
+
+public function getActions(): array
+{
+    return [
+        SiteSwitcher::make(),
+    ];
+}
+```
+
+## Translate Resource traits:
+
+- `Zoker\FilamentMultisite\Traits\Translatable\Resources\Pages\TranslatableEditRecord`
+- `Zoker\FilamentMultisite\Traits\Translatable\Resources\Pages\TranslatableListRecord`
 
 ## Events
 

@@ -36,6 +36,11 @@ class Site extends Model
         return cache()->rememberForever(self::SITES_FOR_DOMAIN_CACHE_KEY . $domain, fn () => Site::where('domain', $domain)->get());
     }
 
+    public static function getLocalesForFilament(): array
+    {
+        return self::pluck('locale')->unique()->toArray();
+    }
+
     public function clearCache(): void
     {
         cache()->forget(self::SITES_FOR_DOMAIN_CACHE_KEY . $this->domain);
