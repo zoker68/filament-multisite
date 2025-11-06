@@ -8,7 +8,8 @@
         "lara-zeus/spatie-translatable": "^1.0"
     },
     "require-dev": {
-        "orchestra/testbench": "^10.6"
+        "orchestra/testbench": "^10.6",
+        "larastan/larastan": "^v3.8.0"
     },
     "license": "MIT",
     "autoload": {
