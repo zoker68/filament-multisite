@@ -26,7 +26,7 @@ class SiteManager
         $original = $this->currentSite;
 
         if (! $site || ! $site->is_active) {
-            throw new InvalidArgumentException('Site not found');
+            $this->siteNotFound();
         }
 
         $this->currentSite = $site;
@@ -70,6 +70,9 @@ class SiteManager
         $prefix = $request->segment(1);
 
         $sites = Site::getForDomain($domain);
+        if (! $sites) {
+            $this->siteNotFound();
+        }
 
         $activeSite = $sites->firstWhere('prefix', $prefix) ?? $sites->firstWhere('prefix', null);
 
@@ -89,12 +92,18 @@ class SiteManager
      */
     private function getDomain(string $host): ?string
     {
-        $defaultHost = parse_url(config('app.url'))['host'];
+        $url = parse_url(config('app.url'));
+        $defaultHost = $url['host'] ?? null;
 
         if ($defaultHost == $host) {
             return null;
         }
 
         return $host;
+    }
+
+    public function siteNotFound(): void
+    {
+        throw new InvalidArgumentException('Site not found');
     }
 }

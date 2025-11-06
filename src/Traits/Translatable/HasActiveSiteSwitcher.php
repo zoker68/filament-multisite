@@ -26,7 +26,7 @@ trait HasActiveSiteSwitcher
 
     public function setActiveSite(Site $activeSite): void
     {
-        if (method_exists($this, 'setActiveLocale')) {
+        if (method_exists($this, 'setActiveLocale')) { // @phpstan-ignore-line
             $this->setActiveLocale($activeSite->locale);
         } else {
             $this->activeLocale = $activeSite->locale;

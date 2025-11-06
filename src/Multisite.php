@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Zoker\FilamentMultisite;
 
 use Filament\Contracts\Plugin;
@@ -7,11 +9,11 @@ use Filament\Panel;
 use LaraZeus\SpatieTranslatable\SpatieTranslatablePlugin;
 use Zoker\FilamentMultisite\Models\Site;
 
-class Multisite implements Plugin
+final class Multisite implements Plugin
 {
-    public static function make()
+    public static function make(): self
     {
-        return new static;
+        return new self;
     }
 
     public function getId(): string

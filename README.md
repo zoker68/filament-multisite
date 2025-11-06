@@ -147,6 +147,7 @@ public function getActions(): array
 
 - `Zoker\FilamentMultisite\Traits\Translatable\Resources\Pages\TranslatableEditRecord`
 - `Zoker\FilamentMultisite\Traits\Translatable\Resources\Pages\TranslatableListRecord`
+- 
 
 ## Events
 

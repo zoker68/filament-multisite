@@ -9,7 +9,9 @@
     },
     "require-dev": {
         "orchestra/testbench": "^10.6",
-        "larastan/larastan": "^v3.8.0"
+        "larastan/larastan": "^v3.8.0",
+        "pestphp/pest": "^3.0",
+        "pestphp/pest-plugin-laravel": "^3.0"
     },
     "license": "MIT",
     "autoload": {
@@ -36,6 +38,16 @@
         },
         "branch-alias": {
             "dev-master": "0-dev"
+        }
+    },
+    "scripts": {
+        "analyze": "php -d memory_limit=1G vendor/bin/phpstan analyse",
+        "test": "php /Users/maksim/Projects/shop/vendor/bin/paratest_for_phpstorm /Users/maksim/Projects/shop/vendor/phpunit/phpunit/phpunit --configuration /Users/maksim/Projects/shop/phpunit.xml /Users/maksim/Projects/shop/packages/zoker/FilamentMultisite/tests",
+        "test-analyze": "composer test && composer analyze"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
         }
     }
 }

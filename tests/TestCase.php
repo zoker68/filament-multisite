@@ -17,8 +17,8 @@ class TestCase extends Orchestra
     {
         parent::setUp();
 
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
         $this->loadMigrationsFrom(__DIR__ . '/../vendor/orchestra/testbench-core/laravel/migrations');
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
 
         // Clear the static properties before each test
         $reflection = new \ReflectionClass(FilamentMultisiteRouteServiceProvider::class);
@@ -39,6 +39,7 @@ class TestCase extends Orchestra
     protected function getPackageProviders($app)
     {
         return [
+            \Zoker\FilamentMultisite\Providers\FilamentMultisiteServiceProvider::class,
             FilamentMultisiteRouteServiceProvider::class,
         ];
     }

@@ -1,0 +1,12 @@
+includes:
+    - ./vendor/larastan/larastan/extension.neon
+
+parameters:
+    bootstrapFiles:
+        - vendor/autoload.php
+
+    paths:
+        - src
+        - tests/_phpstan_dummy
+
+    level: 7

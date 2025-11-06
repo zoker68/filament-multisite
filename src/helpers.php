@@ -15,13 +15,13 @@ function multisite_route(string $name, mixed $parameters = [], bool $absolute = 
         return route($locale . '.' . $name, $parameters, $absolute);
     }
 
-    if (isset($site) && $site->prefix && Route::has('multisite.' . $site->locale . '.' . $name)) {
+    if ($site->prefix && Route::has('multisite.' . $site->locale . '.' . $name)) {
         return route('multisite.' . $site->locale . '.' . $name, $parameters, $absolute);
-    } elseif (isset($site) && Route::has($site->locale . '.' . $name)) {
+    } elseif (Route::has($site->locale . '.' . $name)) {
         return route($site->locale . '.' . $name, $parameters, $absolute);
     }
 
-    if (isset($site) && $site->prefix && Route::has('multisite.' . $name)) {
+    if ($site->prefix && Route::has('multisite.' . $name)) {
 
         return route('multisite.' . $name, $parameters, $absolute);
     }
@@ -29,7 +29,7 @@ function multisite_route(string $name, mixed $parameters = [], bool $absolute = 
     return route($name, $parameters, $absolute);
 }
 
-function currentSite(): ?Site
+function currentSite(): Site
 {
     return SiteManager::getCurrentSite();
 }
