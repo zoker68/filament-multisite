@@ -81,6 +81,25 @@ class SiteManager
 
     public function getCurrentSite(): ?Site
     {
+        if (! $this->currentSite) {
+            $url = parse_url(config('app.url'));
+            $defaultDomain = $url['host'] ?? null;
+
+            $fallbackSite = Site::active()
+                ->where('prefix', null)
+                ->where(function ($query) use ($defaultDomain) {
+                    $query->where('domain', $defaultDomain)
+                        ->orWhereNull('domain');
+                })
+                ->first() ?? Site::active()->first();
+
+            if (! $fallbackSite) {
+                throw new InvalidArgumentException('Site not found');
+            }
+
+            $this->setCurrentSite($fallbackSite);
+        }
+
         return $this->currentSite;
     }
 

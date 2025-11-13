@@ -160,9 +160,69 @@ class SiteManagerTest extends TestCase
         Event::assertDispatchedTimes(SiteChanged::class, 1);
     }
 
-    public function test_it_returns_null_when_no_current_site()
+    public function test_it_returns_exception_when_no_current_site_and_no_matching_default()
     {
-        $this->assertNull($this->siteManager->getCurrentSite());
+        Site::truncate();
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Site not found');
+        $this->siteManager->getCurrentSite();
+    }
+
+    public function test_it_returns_default_site_when_no_current_site_set()
+    {
+        Site::truncate();
+
+        $defaultSite = Site::factory()->create([
+            'is_active' => true,
+            'domain' => null,
+            'prefix' => null,
+        ]);
+
+        $this->assertTrue($defaultSite->is($this->siteManager->getCurrentSite()));
+    }
+
+    public function test_it_returns_default_site_with_config_domain_when_no_current_site_set()
+    {
+        Site::truncate();
+
+        config()->set('app.url', 'http://example.com');
+
+        $defaultSite = Site::factory()->create([
+            'is_active' => true,
+            'domain' => 'example.com',
+            'prefix' => null,
+        ]);
+
+        $this->assertTrue($defaultSite->is($this->siteManager->getCurrentSite()));
+    }
+
+    public function test_it_returns_site_when_only_sites_with_prefix_exist()
+    {
+        Site::truncate();
+
+        $site = Site::factory()->create([
+            'is_active' => true,
+            'domain' => null,
+            'prefix' => 'shop',
+        ]);
+
+        $this->assertTrue($site->is($this->siteManager->getCurrentSite()));
+    }
+
+    public function test_it_returns_exception_when_only_inactive_sites_exist()
+    {
+        Site::truncate();
+
+        Site::factory()->create([
+            'is_active' => false,
+            'domain' => null,
+            'prefix' => null,
+        ]);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Site not found');
+
+        $this->siteManager->getCurrentSite();
     }
 
     public function test_it_gets_domain_correctly()
