@@ -227,11 +227,9 @@ class SiteManagerTest extends TestCase
 
     public function test_it_gets_domain_correctly()
     {
-        // Test with different domain than app.url
         config()->set('app.url', 'http://default.com');
         $this->assertEquals('example.com', $this->invokeMethod($this->siteManager, 'getDomain', ['example.com']));
 
-        // Test with same domain as app.url (should return null)
         $this->assertNull($this->invokeMethod($this->siteManager, 'getDomain', ['default.com']));
     }
 
