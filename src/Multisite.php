@@ -25,7 +25,7 @@ final class Multisite implements Plugin
     {
         $panel->discoverResources(in: __DIR__ . '/../src/Filament/Resources', for: 'Zoker\\FilamentMultisite\\Filament\\Resources');
 
-        $panel->plugin(SpatieTranslatablePlugin::make()->defaultLocales(Site::getLocalesForFilament())->persist());
+        $panel->plugin(SpatieTranslatablePlugin::make()->defaultLocales(Site::getUsingLocales())->persist());
     }
 
     public function boot(Panel $panel): void {}

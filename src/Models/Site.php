@@ -27,6 +27,8 @@ class Site extends Model
 
     const string SITES_FOR_DOMAIN_CACHE_KEY = 'multisite::sites_for_domain.';
 
+    const string USING_LOCALES_CACHE_KEY = 'multisite::using_locales';
+
     protected $fillable = ['code', 'name', 'domain', 'prefix', 'locale', 'is_active'];
 
     #[Scope] // @phpstan-ignore-line
@@ -51,13 +53,22 @@ class Site extends Model
     /**
      * @return array<string>
      */
-    public static function getLocalesForFilament(): array
+    public static function getUsingLocales(): array
     {
-        return self::pluck('locale')->unique()->toArray();
+        if (cache()->has(self::USING_LOCALES_CACHE_KEY)) {
+            return cache()->get(self::USING_LOCALES_CACHE_KEY);
+        }
+
+        if (! \Schema::hasTable((new Site)->getTable())) {
+            return [config('app.locale')];
+        }
+
+        return cache()->rememberForever(self::USING_LOCALES_CACHE_KEY, fn () => self::pluck('locale')->unique()->toArray());
     }
 
     public function clearCache(): void
     {
         cache()->forget(self::SITES_FOR_DOMAIN_CACHE_KEY . $this->domain);
+        cache()->forget(self::USING_LOCALES_CACHE_KEY);
     }
 }
