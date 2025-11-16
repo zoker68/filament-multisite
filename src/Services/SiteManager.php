@@ -79,7 +79,7 @@ class SiteManager
         $this->setCurrentSite($activeSite);
     }
 
-    public function getCurrentSite(): ?Site
+    public function getCurrentSite(): Site
     {
         if (! $this->currentSite) {
             $url = parse_url(config('app.url'));

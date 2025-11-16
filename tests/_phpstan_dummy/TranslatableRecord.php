@@ -6,7 +6,7 @@ use Zoker\FilamentMultisite\Traits\Translatable\Resources\Pages\TranslatableCrea
 use Zoker\FilamentMultisite\Traits\Translatable\Resources\Pages\TranslatableEditRecord;
 use Zoker\FilamentMultisite\Traits\Translatable\Resources\Pages\TranslatableListRecord;
 
-class PhpstanDummy
+class TranslatableRecord
 {
     use TranslatableCreateRecord, TranslatableEditRecord, TranslatableListRecord;
 }
