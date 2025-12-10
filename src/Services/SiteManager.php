@@ -37,6 +37,9 @@ class SiteManager
 
         App::setLocale($site->locale);
         Config::set('app.locale', $site->locale);
+        if (! empty($site->domain)) {
+            Config::set('app.url', $site->hostWithScheme);
+        }
 
         if ($site->prefix) {
             URL::defaults(['multisite_prefix' => $site->prefix]);

@@ -5,6 +5,7 @@ namespace Zoker\FilamentMultisite\Models;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -18,6 +19,7 @@ use Zoker\FilamentMultisite\Observers\SiteObserver;
  * @property ?string $prefix
  * @property string $locale
  * @property bool $is_active
+ * @property string $host_with_scheme
  */
 #[ObservedBy([SiteObserver::class])]
 class Site extends Model
@@ -35,6 +37,16 @@ class Site extends Model
     protected function active(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    /**
+     * @return Attribute<string, never>
+     */
+    protected function hostWithScheme(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->domain ? ('https://' . $this->domain) : config('app.url')
+        );
     }
 
     protected static function newFactory(): SiteFactory
