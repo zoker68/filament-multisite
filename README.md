@@ -1,59 +1,72 @@
 # Filament Multisite
 
-A powerful package for managing multiple sites within a single Laravel Filament application. This package provides tools for handling site-specific routes, translations, and configurations.
+Manage multiple sites within a single Laravel application with first‑class Filament integration.
 
-## Features
+The package provides:
 
-- Multi-site route management
-- Built-in localization support
-- Multisite link generation
-- Site management
-- Filament integration
+- Multi‑site routing (domains / prefixes / locales)
+- Localized routes and helpers for URL generation
+- Per‑site models via `HasMultisite`
+- Filament admin integration with site switching
+
+---
+
+## Requirements
+
+- PHP 8.4+
+- Laravel 12+
+- Filament 4+ (for admin panel integration)
+
+---
 
 ## Installation
 
-1. Install the package via Composer:
+1. **Install the package**
 
-```bash
-composer require zoker/filament-multisite
-```
+   ```bash
+   composer require zoker/filament-multisite
+   ```
 
-3. Publish and run migrations:
+2. **Publish and run migrations**
 
-```bash
-php artisan vendor:publish --tag=filament-multisite-migrations
-php artisan migrate
-```
+   ```bash
+   php artisan vendor:publish --tag=filament-multisite-migrations
+   php artisan migrate
+   ```
 
-4. Add to your Filament panel configuration:
+3. **Register the Filament plugin**
 
-```php
-use Zoker\FilamentMultisite\Multisite;
+   In your Filament panel configuration:
 
-// In your Filament panel configuration
-->plugin(Multisite::make())
-```
+   ```php
+   use Zoker\FilamentMultisite\Multisite;
 
-## Usage
+   // In your Filament panel definition
+   ->plugin(Multisite::make())
+   ```
 
-### Defining Routes
+---
 
-Create site-specific routes in `routes/web.php`:
+## Frontend usage
+
+### Defining multisite routes
+
+Create site‑specific routes in `routes/web.php` using the `multisite` macro:
 
 ```php
 use Illuminate\Support\Facades\Route;
 
 Route::multisite(function () {
     // These routes will be available for all sites
-    Route::get('/', [HomeController::class, 'index']);
-    
-    // Add more site-specific routes here
+    Route::get('/', [HomeController::class, 'index'])->name('home');
+
+    // Add more site‑specific routes here
 });
 ```
 
-### Translatable Routes
+### Translatable routes
 
-For localized routes, use the `translatable` method. Translation keys should be placed in your application's `resources/lang` directory.
+Use the `translatable` macro for localized paths. Translation keys should be placed in your application's `resources/lang` directory:
 
 ```php
 Route::translatable(function () {
@@ -63,7 +76,7 @@ Route::translatable(function () {
 
 ### Generating URLs
 
-Use the `multisite_route()` helper to generate URLs that respect the current site context:
+Use the `multisite_route()` helper to generate URLs that respect the current site and locale:
 
 ```php
 // Basic usage
@@ -76,9 +89,11 @@ $url = multisite_route('products.show', ['product' => $product]);
 $url = multisite_route('login', [], true);
 ```
 
-### Managing the Current Site
+---
 
-#### Using the Facade
+## Managing the current site (frontend)
+
+### Facade: `SiteManager`
 
 ```php
 use Zoker\FilamentMultisite\Facades\SiteManager;
@@ -86,14 +101,14 @@ use Zoker\FilamentMultisite\Facades\SiteManager;
 // Get current site
 $currentSite = SiteManager::getCurrentSite();
 
-// Set a current site by ID
+// Set current site by ID
 SiteManager::setCurrentSiteById(1);
 
-// Set a current site by request
+// Set current site by request
 SiteManager::setCurrentSiteByRequest($request);
 ```
 
-#### Using the Helper
+### Helper: `currentSite()`
 
 ```php
 // Get current site
@@ -102,33 +117,26 @@ $site = currentSite();
 
 ### Middleware
 
-The package includes middleware to automatically set the current site based on the request:
+Use middleware to automatically resolve the current site from the request:
 
 ```php
-// In your route group
-Route::middleware([\Zoker\FilamentMultisite\MultisiteMiddleware::class])->group(function () {
+use Illuminate\Support\Facades\Route;
+use Zoker\FilamentMultisite\Http\Middleware\MultisiteMiddleware;
+
+Route::middleware([MultisiteMiddleware::class])->group(function () {
     // Your routes here
 });
 ```
 
-or add the middleware to the `web` middleware group.
+You can also register the middleware in the `web` group.
 
-### Translatable Models
+---
 
-Add the `ModelHasTranslations` trait to your model and define the translatable attributes:
+## Filament integration
 
-```php
-use Spatie\Translatable\HasTranslations;
+### Site switching in Filament
 
-class YourModel extends Model
-{
-    use HasTranslations;
-
-    public array $translatable = ['attribute'];
-}
-```
-
-## SiteSwitcher
+In Filament the active site is managed via the `FilamentSiteManager`. The currently selected site is stored in the session and is used automatically by models with the `HasMultisite` trait when Filament is serving the request.
 
 Add the `SiteSwitcher` action to your Filament resources:
 
@@ -143,17 +151,29 @@ public function getActions(): array
 }
 ```
 
-## Translate Resource traits:
+## Translatable models
 
-- `Zoker\FilamentMultisite\Traits\Translatable\Resources\Pages\TranslatableEditRecord` For using in Resource/Pages/EditPage in your resource
-- `Zoker\FilamentMultisite\Traits\Translatable\Resources\Pages\TranslatableListRecord` For using in Resource/Pages/ListPages in your resource
-- `Zoker\FilamentMultisite\Traits\Translatable\Resources\Pages\TranslatableCreateRecord` For using in Resource/Pages/CreatePage in your resource
-
-## HasMultisite trait:
-
-For separate model content for each site, add the `HasMultisite` trait to your model:
+To use translatable models, add the `HasTranslations` trait to your model and define the translatable attributes.  
+These attributes must be stored in JSON columns in your database.
 
 ```php
+use Illuminate\Database\Eloquent\Model;
+use Spatie\Translatable\HasTranslations;
+
+class YourModel extends Model
+{
+    use HasTranslations;
+
+    /** @var array<int, string> */
+    public array $translatable = ['attribute'];
+}
+
+## Per‑site models: `HasMultisite`
+
+To store separate content per site, add the `HasMultisite` trait to your model:
+
+```php
+use Illuminate\Database\Eloquent\Model;
 use Zoker\FilamentMultisite\Traits\HasMultisite;
 
 class YourModel extends Model
@@ -162,9 +182,19 @@ class YourModel extends Model
 }
 ```
 
-For using in Resource/Pages/EditPage in your resource:
+This trait adds a global scope on the `site_id` column:
+
+- In **frontend/HTTP** context the current site is resolved via `SiteManager`.
+- In **Filament** context the current site is resolved via `FilamentSiteManager` (selected site in the admin panel).
+
+The trait also provides helpers like `createForCurrentSite()` to create records for the active site.
+
+### Filament resources: `HasMultisiteResource`
+
+To make a Filament resource aware of the active site, use the `HasMultisiteResource` trait:
 
 ```php
+use Filament\Resources\Resource;
 use Zoker\FilamentMultisite\Traits\HasMultisiteResource;
 
 class YourResource extends Resource
@@ -173,8 +203,25 @@ class YourResource extends Resource
 }
 ```
 
-### Prepare migrations
+---
+
+## Translatable resource traits
+
+For translatable Filament resources you can use:
+
+- `Zoker\FilamentMultisite\Traits\Translatable\Resources\Pages\TranslatableEditRecord` – for `Resource/Pages/Edit*`
+- `Zoker\FilamentMultisite\Traits\Translatable\Resources\Pages\TranslatableListRecord` – for `Resource/Pages/List*`
+- `Zoker\FilamentMultisite\Traits\Translatable\Resources\Pages\TranslatableCreateRecord` – for `Resource/Pages/Create*`
+
+---
+
+## Migrations
+
+To link your models to a specific site, add a foreign key to the `sites` table:
+
 ```php
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 use Zoker\FilamentMultisite\Models\Site;
 
 Schema::table('your_table', function (Blueprint $table) {
@@ -182,11 +229,15 @@ Schema::table('your_table', function (Blueprint $table) {
 });
 ```
 
+---
+
 ## Events
 
 The package dispatches events that you can listen for:
 
-- `Zoker\FilamentMultisite\Events\SiteChanged`: Dispatched when the active site changes
+- `Zoker\FilamentMultisite\Events\SiteChanged` – dispatched when the active site changes.
+
+---
 
 ## Testing
 
@@ -195,4 +246,3 @@ Run the tests with:
 ```bash
 composer test
 ```
-
