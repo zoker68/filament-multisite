@@ -118,11 +118,11 @@ or add the middleware to the `web` middleware group.
 Add the `ModelHasTranslations` trait to your model and define the translatable attributes:
 
 ```php
-use Zoker\FilamentMultisite\Traits\Translatable\ModelHasTranslations;
+use Spatie\Translatable\HasTranslations;
 
 class YourModel extends Model
 {
-    use ModelHasTranslations;
+    use HasTranslations;
 
     public array $translatable = ['attribute'];
 }
@@ -145,9 +145,42 @@ public function getActions(): array
 
 ## Translate Resource traits:
 
-- `Zoker\FilamentMultisite\Traits\Translatable\Resources\Pages\TranslatableEditRecord`
-- `Zoker\FilamentMultisite\Traits\Translatable\Resources\Pages\TranslatableListRecord`
-- 
+- `Zoker\FilamentMultisite\Traits\Translatable\Resources\Pages\TranslatableEditRecord` For using in Resource/Pages/EditPage in your resource
+- `Zoker\FilamentMultisite\Traits\Translatable\Resources\Pages\TranslatableListRecord` For using in Resource/Pages/ListPages in your resource
+- `Zoker\FilamentMultisite\Traits\Translatable\Resources\Pages\TranslatableCreateRecord` For using in Resource/Pages/CreatePage in your resource
+
+## HasMultisite trait:
+
+For separate model content for each site, add the `HasMultisite` trait to your model:
+
+```php
+use Zoker\FilamentMultisite\Traits\HasMultisite;
+
+class YourModel extends Model
+{
+    use HasMultisite;
+}
+```
+
+For using in Resource/Pages/EditPage in your resource:
+
+```php
+use Zoker\FilamentMultisite\Traits\HasMultisiteResource;
+
+class YourResource extends Resource
+{
+    use HasMultisiteResource;
+}
+```
+
+### Prepare migrations
+```php
+use Zoker\FilamentMultisite\Models\Site;
+
+Schema::table('your_table', function (Blueprint $table) {
+    $table->foreignIdFor(Site::class)->constrained()->cascadeOnDelete();
+});
+```
 
 ## Events
 

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Zoker\FilamentMultisite\Traits;
 
+use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Zoker\FilamentMultisite\Facades\FilamentSiteManager;
 use Zoker\FilamentMultisite\Facades\SiteManager;
 use Zoker\FilamentMultisite\Models\Site;
 
@@ -17,7 +19,9 @@ trait HasMultisite
     protected static function bootHasMultisite(): void
     {
         static::addGlobalScope('multisite', function (Builder $query) {
-            $currentSite = SiteManager::getCurrentSite();
+            $currentSite = Filament::isServing()
+                ? FilamentSiteManager::getCurrentSite()
+                : SiteManager::getCurrentSite();
             $query->where('site_id', $currentSite->id);
         });
     }
@@ -102,7 +106,11 @@ trait HasMultisite
      */
     public static function createForCurrentSite(array $attributes = []): self
     {
-        $attributes['site_id'] = SiteManager::getCurrentSite()->id;
+        $currentSite = Filament::isServing()
+            ? FilamentSiteManager::getCurrentSite()
+            : SiteManager::getCurrentSite();
+
+        $attributes['site_id'] = $currentSite->id;
 
         return self::create($attributes);
     }
