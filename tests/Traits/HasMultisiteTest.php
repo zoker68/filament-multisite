@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Zoker\FilamentMultisite\Tests\Traits;
 
+use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Zoker\FilamentMultisite\Facades\SiteManager;
 use Zoker\FilamentMultisite\Models\Site;
@@ -20,6 +21,13 @@ class HasMultisiteTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->mock(\Filament\Filament::class, function ($mock) {
+            $mock->shouldReceive('isServing')->andReturn(false);
+        });
+
+        // Подменяем инстанс фасада
+        Filament::swap(app(\Filament\Filament::class));
 
         Site::truncate();
 

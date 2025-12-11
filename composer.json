@@ -1,11 +1,12 @@
 {
     "name": "zoker/filament-multisite",
-    "description": "Multisite plugin for laravel with Filament managing",
+    "description": "Multisite plugin for Laravel with Filament managing",
     "type": "library",
     "require": {
         "laravel/framework": "^12.0",
         "php": "^8.4",
-        "lara-zeus/spatie-translatable": "^1.0"
+        "lara-zeus/spatie-translatable": "^1.0",
+        "filament/filament": "^4.3"
     },
     "require-dev": {
         "orchestra/testbench": "^10.6",

@@ -13,9 +13,6 @@ use Zoker\FilamentMultisite\Models\Site;
 
 trait HasMultisite
 {
-    /**
-     * Boot the trait - adds global scope for multisite filtering.
-     */
     protected static function bootHasMultisite(): void
     {
         static::addGlobalScope('multisite', function (Builder $query) {
@@ -26,9 +23,6 @@ trait HasMultisite
         });
     }
 
-    /**
-     * Get the site this model belongs to.
-     */
     public function site(): BelongsTo // @phpstan-ignore-line
     {
         return $this->belongsTo(Site::class);
@@ -37,8 +31,6 @@ trait HasMultisite
     /**
      * @param  Builder<self>  $query
      * @return Builder<self>
-     *
-     * Get records for specific site without global scope.
      */
     public function scopeForSite(Builder $query, int|Site $site): Builder
     {
@@ -51,8 +43,6 @@ trait HasMultisite
     /**
      * @param  Builder<self>  $query
      * @return Builder<self>
-     *
-     * Get records for all sites without global scope.
      */
     public function scopeAllSites(Builder $query): Builder
     {
@@ -63,8 +53,6 @@ trait HasMultisite
      * @param  Builder<self>  $query
      * @param  array<int>  $siteIds
      * @return Builder<self>
-     *
-     * Scope to get records for multiple sites.
      */
     public function scopeForSites(Builder $query, array $siteIds): Builder
     {
@@ -75,8 +63,6 @@ trait HasMultisite
     /**
      * @param  Builder<self>  $query
      * @return Builder<self>
-     *
-     * Scope to exclude records from specific site.
      */
     public function scopeExceptSite(Builder $query, int|Site $site): Builder
     {
@@ -87,8 +73,6 @@ trait HasMultisite
     }
 
     /**
-     * Set the site for this model.
-     *
      * @return $this
      */
     public function setSite(int|Site $site): self
@@ -100,9 +84,6 @@ trait HasMultisite
 
     /**
      * @param  array<string, mixed>  $attributes
-     * @return self
-     *
-     * Create a new model instance for the current site.
      */
     public static function createForCurrentSite(array $attributes = []): self
     {
@@ -117,9 +98,6 @@ trait HasMultisite
 
     /**
      * @param  array<string, mixed>  $attributes
-     * @return self
-     *
-     * Create a new model instance for specific site.
      */
     public static function createForSite(int|Site $site, array $attributes = []): self
     {
