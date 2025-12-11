@@ -3,6 +3,7 @@
 namespace Zoker\FilamentMultisite\Providers;
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Zoker\FilamentMultisite\Http\Middleware\MultisiteMiddleware;
 use Zoker\FilamentMultisite\Models\Site;
@@ -80,6 +81,12 @@ class FilamentMultisiteRouteServiceProvider extends ServiceProvider
 
     private static function setMultisiteAvailablePrefixes(): void
     {
+        if (! Schema::hasTable('sites')) {
+            self::$multisiteAvailablePrefixes = [];
+
+            return;
+        }
+
         self::$multisiteAvailablePrefixes = cache()->remember(
             self::MULTISITE_AVAILABLE_PREFIXES_CACHE_KEY,
             60 * 60 * 3,

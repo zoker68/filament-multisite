@@ -45,7 +45,7 @@ class SiteResource extends Resource
                         TextInput::make('locale')
                             ->label('Locale')
                             ->required()
-                            ->datalist(collect(File::directories(base_path('resources/lang')))->map(fn ($path) => pathinfo($path, PATHINFO_BASENAME))),
+                            ->datalist(File::isDirectory(base_path('resources/lang')) ? collect(File::directories(base_path('resources/lang')))->map(fn ($path) => pathinfo($path, PATHINFO_BASENAME)) : []),
 
                         Toggle::make('is_active')
                             ->label('Active'),
