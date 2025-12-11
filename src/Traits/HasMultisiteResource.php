@@ -15,4 +15,9 @@ trait HasMultisiteResource
     {
         return [];
     }
+
+    public static function getDefaultTranslatableLocale(): string
+    {
+        return static::getTranslatableLocales()[0];
+    }
 }
