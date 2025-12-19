@@ -50,6 +50,13 @@ class Site extends Model
         );
     }
 
+    protected function url(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value, array $attributes) => $this->hostWithScheme . (filled($this->prefix) ? '/' . $this->prefix : ''),
+        );
+    }
+
     protected static function newFactory(): SiteFactory
     {
         return SiteFactory::new();
