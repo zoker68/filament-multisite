@@ -14,6 +14,7 @@ class SiteFactory extends Factory
         return [
             'code' => $this->faker->unique()->slug,
             'name' => $this->faker->name,
+            'label' => $this->faker->name,
             'prefix' => $this->faker->slug,
             'locale' => $this->faker->locale,
             'is_active' => true,

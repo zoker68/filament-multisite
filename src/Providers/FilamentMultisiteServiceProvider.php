@@ -12,6 +12,7 @@ class FilamentMultisiteServiceProvider extends PackageServiceProvider
         $package->name('filament-multisite')
             ->hasMigrations([
                 'create_sites_table',
+                'add_label_to_sites_table',
             ])
             ->hasTranslations();
     }

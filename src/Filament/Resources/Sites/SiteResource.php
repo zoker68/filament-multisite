@@ -10,6 +10,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
@@ -37,7 +39,16 @@ class SiteResource extends Resource
                     ->columns(2)
                     ->schema([
                         TextInput::make('name')
-                            ->required(),
+                            ->required()
+                            ->live()
+                            ->afterStateUpdated(function (Get $get, Set $set) {
+                                if (empty($get('label') ?? '')) {
+                                    $set('label', $get('name'));
+                                }
+                            }),
+
+                        TextInput::make('label')
+                            ->live(),
 
                         TextInput::make('code')
                             ->required(),
@@ -70,6 +81,10 @@ class SiteResource extends Resource
             ->columns([
 
                 TextColumn::make('code')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('label')
                     ->searchable()
                     ->sortable(),
 
@@ -113,6 +128,6 @@ class SiteResource extends Resource
 
     public static function getGloballySearchableAttributes(): array
     {
-        return ['name'];
+        return ['name', 'label'];
     }
 }

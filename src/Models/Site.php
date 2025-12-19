@@ -15,6 +15,7 @@ use Zoker\FilamentMultisite\Observers\SiteObserver;
 /**
  * @property string $code
  * @property string $name
+ * @property ?string $label
  * @property ?string $domain
  * @property ?string $prefix
  * @property string $locale
@@ -31,7 +32,7 @@ class Site extends Model
 
     const string USING_LOCALES_CACHE_KEY = 'multisite::using_locales';
 
-    protected $fillable = ['code', 'name', 'domain', 'prefix', 'locale', 'is_active'];
+    protected $fillable = ['code', 'name', 'label', 'domain', 'prefix', 'locale', 'is_active'];
 
     #[Scope] // @phpstan-ignore-line
     protected function active(Builder $query): Builder
