@@ -34,6 +34,22 @@ class Site extends Model
 
     protected $fillable = ['code', 'name', 'label', 'domain', 'prefix', 'locale', 'is_active'];
 
+    private static ?array $usingLocales = null;
+
+    public static function setUsingLocales(): void
+    {
+        if (cache()->has(self::USING_LOCALES_CACHE_KEY)) {
+            self::$usingLocales = cache()->get(self::USING_LOCALES_CACHE_KEY);
+        }
+
+        if (! \Schema::hasTable((new Site)->getTable())) {
+            self::$usingLocales = [config('app.locale')];
+        }
+
+        self::$usingLocales = self::pluck('locale')->unique()->toArray();
+        cache()->put(self::USING_LOCALES_CACHE_KEY, self::$usingLocales);
+    }
+
     #[Scope] // @phpstan-ignore-line
     protected function active(Builder $query): Builder
     {
@@ -75,15 +91,11 @@ class Site extends Model
      */
     public static function getUsingLocales(): array
     {
-        if (cache()->has(self::USING_LOCALES_CACHE_KEY)) {
-            return cache()->get(self::USING_LOCALES_CACHE_KEY);
+        if (! self::$usingLocales) {
+            self::setUsingLocales();
         }
 
-        if (! \Schema::hasTable((new Site)->getTable())) {
-            return [config('app.locale')];
-        }
-
-        return cache()->rememberForever(self::USING_LOCALES_CACHE_KEY, fn () => self::pluck('locale')->unique()->toArray());
+        return self::$usingLocales;
     }
 
     public function clearCache(): void

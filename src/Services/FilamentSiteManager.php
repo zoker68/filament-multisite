@@ -29,6 +29,11 @@ class FilamentSiteManager
         return static::$currentSite;
     }
 
+    public function getCurrentSiteLocale(): string
+    {
+        return $this->getCurrentSite()->locale;
+    }
+
     private function initializeCurrentSite(): void
     {
         $activeSiteId = session()->get(self::MULTISITE_FILAMENT_ACTIVE_SITE_ID_SESSION, null);
