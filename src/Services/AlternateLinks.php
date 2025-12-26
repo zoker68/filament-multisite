@@ -91,6 +91,10 @@ class AlternateLinks
 
     public static function setCanonicalUrl(string $url): void
     {
+        if (empty($url) && trim($url) !== '') {
+            return;
+        }
+
         static::$canonicalUrl = $url;
     }
 }
