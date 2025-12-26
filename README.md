@@ -231,6 +231,87 @@ Schema::table('your_table', function (Blueprint $table) {
 
 ---
 
+## Alternate Links & Canonical URLs
+
+The package provides automatic generation of alternate links and canonical URLs for SEO optimization.
+
+### Frontend Components
+
+#### Alternate Links Head
+
+Include alternate links in your HTML head section:
+
+```blade
+<x-multisite::alternateLinksHead />
+```
+
+This will generate:
+- `<link rel="canonical">` for the specified canonical site (if configured)
+- `<link rel="alternate" hreflang="...">` for all available sites
+
+#### Site Picker
+
+Display a site/language switcher component:
+
+```blade
+<x-multisite::sitePicker />
+```
+
+### Configuration
+
+Publish the configuration file:
+
+```bash
+php artisan vendor:publish --tag=multisite-config
+```
+
+Set up the canonical site in `config/multisite.php`:
+
+```php
+<?php
+
+return [
+    'canonical_site_id' => 1, // ID of the site to use as canonical
+];
+```
+
+If canonical_site_id = null is not set, canonical link will not be generated
+
+### Programmatic Usage
+
+#### Setting Alternate Links
+
+```php
+use Zoker\FilamentMultisite\Services\AlternateLinks;
+
+// Set alternate links in your controller
+public function show(Category $category)
+{
+    $links = [];
+    foreach ($sites as $site) {
+        $links[] = [
+            'site' => $site,
+            'url' => localized_url_for_site($site),
+        ];
+    }
+    AlternateLinks::set($links);
+    
+    return view('category.show', compact('category'));
+}
+```
+
+#### Custom Canonical URL
+
+```php
+// Set a custom canonical URL (overrides config)
+AlternateLinks::setCanonicalUrl('https://example.com/custom-url');
+
+// Get the current canonical URL
+$canonicalUrl = AlternateLinks::getCanonicalUrl();
+```
+
+---
+
 ## Events
 
 The package dispatches events that you can listen for:

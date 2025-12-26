@@ -16,7 +16,8 @@ class FilamentMultisiteServiceProvider extends PackageServiceProvider
                 'add_label_to_sites_table',
             ])
             ->hasViews('multisite')
-            ->hasTranslations();
+            ->hasTranslations()
+            ->hasConfigFile();
     }
 
     public function registeringPackage(): void

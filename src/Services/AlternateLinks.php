@@ -13,6 +13,8 @@ class AlternateLinks
     /** @var array<int, array{site: Site, url: string, locale: string}> */
     protected static array $links = [];
 
+    protected static ?string $canonicalUrl = null;
+
     protected static bool $initialized = false;
 
     /**
@@ -55,6 +57,40 @@ class AlternateLinks
     public static function clear(): void
     {
         static::$links = [];
+        static::$canonicalUrl = null;
         static::$initialized = false;
+    }
+
+    /**
+     * Generate canonical URL based on configuration
+     */
+    protected static function generateCanonicalUrl(): void
+    {
+        // If canonical URL is already set, don't overwrite it
+        if (static::$canonicalUrl !== null) {
+            return;
+        }
+
+        $canonicalSiteId = config('multisite.canonical_site_id');
+
+        if (! $canonicalSiteId) {
+            static::$canonicalUrl = null;
+
+            return;
+        }
+
+        static::$canonicalUrl = static::$links[$canonicalSiteId]['url'] ?? null;
+    }
+
+    public static function getCanonicalUrl(): ?string
+    {
+        static::generateCanonicalUrl();
+
+        return static::$canonicalUrl;
+    }
+
+    public static function setCanonicalUrl(string $url): void
+    {
+        static::$canonicalUrl = $url;
     }
 }

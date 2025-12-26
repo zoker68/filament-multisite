@@ -17,6 +17,12 @@ class AlternateLinksHead extends Component
         }
     }
 
+    public ?string $canonicalUrl {
+        get {
+            return AlternateLinks::getCanonicalUrl();
+        }
+    }
+
     public function render(): View
     {
         return view('multisite::components.alternate-links-head');
