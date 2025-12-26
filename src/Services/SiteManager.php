@@ -106,6 +106,21 @@ class SiteManager
         return $this->currentSite;
     }
 
+    public function getCurrentSiteLocale(): string
+    {
+        return $this->getCurrentSite()->locale;
+    }
+
+    public function getCurrentLocale(): string
+    {
+        return $this->getCurrentSiteLocale();
+    }
+
+    public function getCurrentSiteId(): int
+    {
+        return $this->getCurrentSite()->id;
+    }
+
     /**
      * Normalize the host for data in the Site model.
      *

@@ -36,14 +36,20 @@ class Site extends Model
 
     private static ?array $usingLocales = null;
 
+    private static ?Collection $sitesForDomain = null;
+
     public static function setUsingLocales(): void
     {
         if (cache()->has(self::USING_LOCALES_CACHE_KEY)) {
             self::$usingLocales = cache()->get(self::USING_LOCALES_CACHE_KEY);
+
+            return;
         }
 
         if (! \Schema::hasTable((new Site)->getTable())) {
             self::$usingLocales = [config('app.locale')];
+
+            return;
         }
 
         self::$usingLocales = self::pluck('locale')->unique()->toArray();
@@ -83,7 +89,11 @@ class Site extends Model
      */
     public static function getForDomain(?string $domain): ?Collection
     {
-        return cache()->rememberForever(self::SITES_FOR_DOMAIN_CACHE_KEY . $domain, fn () => Site::where('domain', $domain)->get());
+        if (! self::$sitesForDomain) {
+            self::$sitesForDomain = cache()->rememberForever(self::SITES_FOR_DOMAIN_CACHE_KEY . $domain, fn () => Site::query()->active()->where('domain', $domain)->get());
+        }
+
+        return self::$sitesForDomain;
     }
 
     /**

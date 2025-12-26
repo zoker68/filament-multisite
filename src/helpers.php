@@ -9,6 +9,10 @@ function multisite_route(string $name, mixed $parameters = [], bool $absolute = 
 
     $locale ??= $site->locale;
 
+    if ($site->prefix) {
+        $parameters['multisite_prefix'] = $site->prefix;
+    }
+
     if ($locale && $site->prefix && Route::has('multisite.' . $locale . '.' . $name)) {
         return route('multisite.' . $locale . '.' . $name, $parameters, $absolute);
     } elseif ($locale && Route::has($locale . '.' . $name)) {
@@ -22,7 +26,6 @@ function multisite_route(string $name, mixed $parameters = [], bool $absolute = 
     }
 
     if ($site->prefix && Route::has('multisite.' . $name)) {
-
         return route('multisite.' . $name, $parameters, $absolute);
     }
 
