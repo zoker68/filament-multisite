@@ -7,10 +7,12 @@ namespace Zoker\FilamentMultisite\View\Components;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
 use Illuminate\View\Component;
+use Zoker\FilamentMultisite\Models\Site;
 use Zoker\FilamentMultisite\Services\AlternateLinks;
 
 class AlternateLinksHead extends Component
 {
+    /** @var Collection<int, array{site: Site, url: string, locale: string, isActive: bool}> */
     public Collection $items {
         get {
             return AlternateLinks::get();
@@ -25,6 +27,6 @@ class AlternateLinksHead extends Component
 
     public function render(): View
     {
-        return view('multisite::components.alternate-links-head');
+        return view('multisite::components.alternate-links-head'); // @phpstan-ignore-line
     }
 }

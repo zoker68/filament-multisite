@@ -21,6 +21,7 @@ use Zoker\FilamentMultisite\Observers\SiteObserver;
  * @property string $locale
  * @property bool $is_active
  * @property string $host_with_scheme
+ * @property string $url
  */
 #[ObservedBy([SiteObserver::class])]
 class Site extends Model
@@ -34,8 +35,10 @@ class Site extends Model
 
     protected $fillable = ['code', 'name', 'label', 'domain', 'prefix', 'locale', 'is_active'];
 
+    /** @var array<string> */
     private static ?array $usingLocales = null;
 
+    /** @var Collection<int, Site> */
     private static ?Collection $sitesForDomain = null;
 
     public static function setUsingLocales(): void
@@ -72,6 +75,9 @@ class Site extends Model
         );
     }
 
+    /**
+     * @return Attribute<string, never>
+     */
     protected function url(): Attribute
     {
         return Attribute::make(
@@ -85,9 +91,9 @@ class Site extends Model
     }
 
     /**
-     * @return Collection<int, Site>|null
+     * @return Collection<int, Site>
      */
-    public static function getForDomain(?string $domain): ?Collection
+    public static function getForDomain(?string $domain): Collection
     {
         if (! self::$sitesForDomain) {
             self::$sitesForDomain = cache()->rememberForever(self::SITES_FOR_DOMAIN_CACHE_KEY . $domain, fn () => Site::query()->active()->where('domain', $domain)->get());

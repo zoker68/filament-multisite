@@ -73,7 +73,7 @@ class SiteManager
         $prefix = $request->segment(1);
 
         $sites = Site::getForDomain($domain);
-        if (! $sites) {
+        if ($sites->isEmpty()) {
             $this->siteNotFound();
         }
 

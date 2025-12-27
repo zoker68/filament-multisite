@@ -10,7 +10,7 @@ use Zoker\FilamentMultisite\Models\Site;
 
 class AlternateLinks
 {
-    /** @var array<int, array{site: Site, url: string, locale: string}> */
+    /** @var array<int, array{site: Site, url: string}> */
     protected static array $links = [];
 
     protected static ?string $canonicalUrl = null;
