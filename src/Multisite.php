@@ -9,6 +9,7 @@ use Filament\Contracts\Plugin;
 use Filament\Forms\Components\Select;
 use Filament\Panel;
 use LaraZeus\SpatieTranslatable\SpatieTranslatablePlugin;
+use Zoker\FilamentMultisite\Http\Middleware\SetFilamentLocale;
 use Zoker\FilamentMultisite\Models\Site;
 
 final class Multisite implements Plugin
@@ -28,11 +29,16 @@ final class Multisite implements Plugin
         $panel->discoverResources(in: __DIR__ . '/../src/Filament/Resources', for: 'Zoker\\FilamentMultisite\\Filament\\Resources');
 
         $panel->plugin(SpatieTranslatablePlugin::make()->defaultLocales(Site::getUsingLocales())->persist());
+
+        $panel->middleware([
+            'web',
+            SetFilamentLocale::class,
+        ]);
     }
 
     public function boot(Panel $panel): void
     {
-        $locales = config('multisite.locales', []);
+        $locales = config('multisite.filament_locales', []);
 
         if (count($locales) > 1) {
             $panel->userMenuItems([
@@ -45,7 +51,7 @@ final class Multisite implements Plugin
                             ->required(),
                     ])
                     ->action(function (array $data) {
-                        $availableLocales = array_keys(config('multisite.locales', []));
+                        $availableLocales = array_keys(config('multisite.filament_locales', []));
 
                         if (! in_array($data['language'], $availableLocales)) {
                             return;

@@ -10,14 +10,14 @@ return [
     /**
      * Available locales for Filament interface
      */
-    'locales' => [
+    'filament_locales' => [
         'en' => 'English',
         // Uncomment to add more languages
-        /*
+
         'ru' => 'Русский',
         'sl' => 'Slovenščina',
-        'de' =>  'Deutsch',
+        'de' => 'Deutsch',
         'es' => 'Español',
-*/
+
     ],
 ];
