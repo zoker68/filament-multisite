@@ -11,28 +11,13 @@ return [
      * Available locales for Filament interface
      */
     'locales' => [
-        'en' => [
-            'name' => 'English',
-            'icon' => 'heroicon-o-language',
-        ],
+        'en' => 'English',
         // Uncomment to add more languages
-/*
-        'ru' => [
-            'name' => 'Русский',
-            'icon' => 'heroicon-o-language',
-        ],
-        'sl' => [
-            'name' => 'Slovenščina',
-            'icon' => 'heroicon-o-language',
-        ],
-        'de' => [
-            'name' => 'Deutsch',
-            'icon' => 'heroicon-o-language',
-        ],
-        'es' => [
-            'name' => 'Español',
-            'icon' => 'heroicon-o-language',
-        ],
+        /*
+        'ru' => 'Русский',
+        'sl' => 'Slovenščina',
+        'de' =>  'Deutsch',
+        'es' => 'Español',
 */
     ],
 ];

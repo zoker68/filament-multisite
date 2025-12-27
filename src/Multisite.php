@@ -40,9 +40,9 @@ final class Multisite implements Plugin
                     ->label('Change Language')
                     ->schema([
                         Select::make('language')
-                            ->options(fn() => array_map(fn ($config) => $config['name'], $locales))
-                            ->default(fn() => app()->getLocale())
-                            ->required()
+                            ->options($locales)
+                            ->default(fn () => app()->getLocale())
+                            ->required(),
                     ])
                     ->action(function (array $data) {
                         $availableLocales = array_keys(config('multisite.locales', []));
@@ -54,7 +54,7 @@ final class Multisite implements Plugin
                         cookie()->queue('filament_locale', $data['language'], 60 * 60 * 24 * 365 * 10);
 
                         redirect(url()->previous());
-                    })
+                    }),
             ]);
         }
     }
