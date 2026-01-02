@@ -30,7 +30,7 @@ class FilamentMultisiteServiceProvider extends PackageServiceProvider
     {
         $this->loadHelpers();
 
-        Translatable::fallbackLocale(config('multisite.fallback_locale'), true);
+        Translatable::fallback(config('multisite.fallback_locale'), true);
     }
 
     private function loadHelpers(): void
