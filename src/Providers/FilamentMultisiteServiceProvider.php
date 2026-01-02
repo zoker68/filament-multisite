@@ -5,6 +5,7 @@ namespace Zoker\FilamentMultisite\Providers;
 use Illuminate\Support\Facades\Blade;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
+use Spatie\Translatable\Facades\Translatable;
 
 class FilamentMultisiteServiceProvider extends PackageServiceProvider
 {
@@ -28,6 +29,8 @@ class FilamentMultisiteServiceProvider extends PackageServiceProvider
     public function bootingPackage(): void
     {
         $this->loadHelpers();
+
+        Translatable::fallbackLocale(config('multisite.fallback_locale'), true);
     }
 
     private function loadHelpers(): void
