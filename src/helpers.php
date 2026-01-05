@@ -29,6 +29,13 @@ function multisite_route(string $name, mixed $parameters = [], bool $absolute = 
         return route('multisite.' . $name, $parameters, $absolute);
     }
 
+    if (! $site->prefix) {
+        $nameWithoutLocalePrefix = ltrim($name, 'multisite.');
+        if (Route::has($nameWithoutLocalePrefix) && $nameWithoutLocalePrefix != $name) {
+            return route($nameWithoutLocalePrefix, $parameters, $absolute);
+        }
+    }
+
     return route($name, $parameters, $absolute);
 }
 
