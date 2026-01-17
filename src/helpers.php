@@ -9,6 +9,8 @@ function multisite_route(string $name, mixed $parameters = [], bool $absolute = 
 
     $locale ??= $site->locale;
 
+    $parameters = Arr::wrap($parameters);
+
     if ($site->prefix) {
         $parameters['multisite_prefix'] = $site->prefix;
     }
