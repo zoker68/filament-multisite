@@ -69,8 +69,7 @@ class SiteManager
      */
     public function setCurrentSiteByRequest(Request $request): void
     {
-        $domain = $this->getDomain($request->getHost());
-        $prefix = $request->segment(1);
+        [$domain, $prefix] = $this->extractDomainAndPrefix($request);
 
         $sites = Site::getForDomain($domain);
         if ($sites->isEmpty()) {
@@ -80,6 +79,61 @@ class SiteManager
         $activeSite = $sites->firstWhere('prefix', $prefix) ?? $sites->firstWhere('prefix', null);
 
         $this->setCurrentSite($activeSite);
+    }
+
+    /**
+     * Extract domain and prefix from request.
+     * For Livewire requests, uses Referer header to get original URL.
+     *
+     * @return array{0: string|null, 1: string|null}
+     */
+    protected function extractDomainAndPrefix(Request $request): array
+    {
+        if ($this->isLivewireRequest($request)) {
+            return $this->extractFromReferer($request);
+        }
+
+        return [
+            $this->getDomain($request->getHost()),
+            $request->segment(1),
+        ];
+    }
+
+    /**
+     * Check if the request is a Livewire update request.
+     */
+    protected function isLivewireRequest(Request $request): bool
+    {
+        return $request->is('livewire/update', 'livewire/*')
+            || $request->hasHeader('X-Livewire');
+    }
+
+    /**
+     * Extract domain and prefix from Referer header.
+     *
+     * @return array{0: string|null, 1: string|null}
+     */
+    protected function extractFromReferer(Request $request): array
+    {
+        $referer = $request->header('Referer');
+
+        if (! $referer) {
+            return [
+                $this->getDomain($request->getHost()),
+                null,
+            ];
+        }
+
+        $parsed = parse_url($referer);
+        $host = $parsed['host'] ?? $request->getHost();
+        $path = $parsed['path'] ?? '';
+        $segments = array_values(array_filter(explode('/', $path)));
+        $prefix = $segments[0] ?? null;
+
+        return [
+            $this->getDomain($host),
+            $prefix,
+        ];
     }
 
     public function getCurrentSite(): Site
