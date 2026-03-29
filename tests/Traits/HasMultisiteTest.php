@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace Zoker\FilamentMultisite\Tests\Traits;
 
 use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Zoker\FilamentMultisite\Facades\SiteManager;
 use Zoker\FilamentMultisite\Models\Site;
 use Zoker\FilamentMultisite\Tests\TestCase;
+use Zoker\FilamentMultisite\Traits\HasMultisite;
 
 class HasMultisiteTest extends TestCase
 {
@@ -130,22 +134,22 @@ class HasMultisiteTest extends TestCase
 /**
  * Test model for testing HasMultisite trait.
  */
-class TestModel extends \Illuminate\Database\Eloquent\Model
+class TestModel extends Model
 {
-    use \Illuminate\Database\Eloquent\Factories\HasFactory;
-    use \Zoker\FilamentMultisite\Traits\HasMultisite;
+    use HasFactory;
+    use HasMultisite;
 
     protected $table = 'test_models';
 
     protected $fillable = ['name', 'site_id'];
 
-    protected static function newFactory(): \Illuminate\Database\Eloquent\Factories\Factory
+    protected static function newFactory(): Factory
     {
         return TestModelFactory::new();
     }
 }
 
-class TestModelFactory extends \Illuminate\Database\Eloquent\Factories\Factory
+class TestModelFactory extends Factory
 {
     protected $model = TestModel::class;
 
@@ -153,7 +157,7 @@ class TestModelFactory extends \Illuminate\Database\Eloquent\Factories\Factory
     {
         return [
             'name' => $this->faker->word,
-            'site_id' => \Zoker\FilamentMultisite\Models\Site::factory(),
+            'site_id' => Site::factory(),
         ];
     }
 }

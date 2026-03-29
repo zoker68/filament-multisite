@@ -96,7 +96,13 @@ class Site extends Model
     public static function getForDomain(?string $domain): Collection
     {
         if (! self::$sitesForDomain) {
-            self::$sitesForDomain = cache()->rememberForever(self::SITES_FOR_DOMAIN_CACHE_KEY . $domain, fn () => Site::query()->active()->where('domain', $domain)->get());
+            $cacheKey = self::SITES_FOR_DOMAIN_CACHE_KEY . $domain;
+            if (cache()->has($cacheKey)) {
+                self::$sitesForDomain = Site::hydrate(cache()->get($cacheKey));
+            } else {
+                self::$sitesForDomain = Site::query()->active()->where('domain', $domain)->get();
+                cache()->put($cacheKey, self::$sitesForDomain->map->getAttributes()->toArray());
+            }
         }
 
         return self::$sitesForDomain;

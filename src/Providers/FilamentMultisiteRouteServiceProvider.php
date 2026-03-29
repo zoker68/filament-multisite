@@ -81,7 +81,7 @@ class FilamentMultisiteRouteServiceProvider extends ServiceProvider
 
     private static function setMultisiteAvailablePrefixes(): void
     {
-        if (! Schema::hasTable('sites')) {
+        if (! cache()->has(self::MULTISITE_AVAILABLE_PREFIXES_CACHE_KEY) && ! Schema::hasTable('sites')) {
             self::$multisiteAvailablePrefixes = [];
 
             return;

@@ -38,6 +38,8 @@ function multisite_route(string $name, mixed $parameters = [], bool $absolute = 
         }
     }
 
+    //    logger([$name, $parameters, $absolute]);
+
     return route($name, $parameters, $absolute);
 }
 

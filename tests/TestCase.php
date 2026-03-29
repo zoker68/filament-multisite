@@ -8,6 +8,7 @@ use Orchestra\Testbench\TestCase as Orchestra;
 use Zoker\FilamentMultisite\Facades\SiteManager;
 use Zoker\FilamentMultisite\Models\Site;
 use Zoker\FilamentMultisite\Providers\FilamentMultisiteRouteServiceProvider;
+use Zoker\FilamentMultisite\Providers\FilamentMultisiteServiceProvider;
 
 class TestCase extends Orchestra
 {
@@ -40,7 +41,7 @@ class TestCase extends Orchestra
     protected function getPackageProviders($app)
     {
         return [
-            \Zoker\FilamentMultisite\Providers\FilamentMultisiteServiceProvider::class,
+            FilamentMultisiteServiceProvider::class,
             FilamentMultisiteRouteServiceProvider::class,
         ];
     }
