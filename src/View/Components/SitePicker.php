@@ -19,6 +19,13 @@ class SitePicker extends Component
      */
     public Collection $items;
 
+    public Site $currentSite;
+
+    public function __construct()
+    {
+        $this->currentSite = SiteManager::getCurrentSite();
+    }
+
     public function render(): View
     {
         $this->items = AlternateLinks::get()->keyBy('site.id');
