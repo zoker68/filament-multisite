@@ -129,6 +129,35 @@ class HasMultisiteTest extends TestCase
         $this->assertEquals($this->site2->id, $model->site_id);
         $this->assertEquals('Test Model', $model->name);
     }
+
+    public function test_for_sites_scope_returns_models_from_multiple_sites(): void
+    {
+        $site3 = Site::factory()->create(['code' => 'site3', 'is_active' => true]);
+
+        SiteManager::setCurrentSite($this->site1);
+
+        TestModel::factory()->create(['site_id' => $this->site1->id, 'name' => 'Model 1']);
+        TestModel::factory()->create(['site_id' => $this->site2->id, 'name' => 'Model 2']);
+        TestModel::factory()->create(['site_id' => $site3->id, 'name' => 'Model 3']);
+
+        $models = TestModel::forSites([$this->site1->id, $this->site2->id])->get();
+
+        $this->assertCount(2, $models);
+        $this->assertEqualsCanonicalizing(['Model 1', 'Model 2'], $models->pluck('name')->all());
+    }
+
+    public function test_except_site_scope_excludes_a_site(): void
+    {
+        SiteManager::setCurrentSite($this->site1);
+
+        TestModel::factory()->create(['site_id' => $this->site1->id, 'name' => 'Model 1']);
+        TestModel::factory()->create(['site_id' => $this->site2->id, 'name' => 'Model 2']);
+
+        $models = TestModel::exceptSite($this->site1)->get();
+
+        $this->assertCount(1, $models);
+        $this->assertEquals('Model 2', $models->first()->name);
+    }
 }
 
 /**

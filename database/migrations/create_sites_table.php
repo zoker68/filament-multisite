@@ -9,11 +9,14 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('sites')) {
+            return;
+        }
+
         Schema::create('sites', function (Blueprint $table) {
             $table->id();
             $table->string('code')->unique();
             $table->string('name');
-            $table->string('label')->nullable();
             $table->string('domain')->nullable();
             $table->string('prefix')->nullable();
             $table->string('locale')->default(app()->getLocale());
@@ -25,7 +28,6 @@ return new class extends Migration
         Site::create([
             'code' => 'default',
             'name' => 'Default',
-            'label' => 'Default',
             'is_active' => true,
         ]);
     }

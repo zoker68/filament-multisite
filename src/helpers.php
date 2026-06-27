@@ -38,7 +38,9 @@ function multisite_route(string $name, mixed $parameters = [], bool $absolute = 
         }
     }
 
-    //    logger([$name, $parameters, $absolute]);
+    // No multisite/locale variant matched, so this is a plain route that does not use the
+    // multisite_prefix segment. Drop it to avoid leaking it as a ?multisite_prefix query string.
+    unset($parameters['multisite_prefix']);
 
     return route($name, $parameters, $absolute);
 }

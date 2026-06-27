@@ -18,9 +18,12 @@ class TestCase extends Orchestra
     {
         parent::setUp();
 
-        $this->loadMigrationsFrom(__DIR__ . '/../vendor/orchestra/testbench-core/laravel/migrations');
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
-        $this->loadMigrationsFrom(__DIR__ . '/../tests/database/migrations');
+        // The package migrations have no timestamp prefixes, so loading the whole
+        // directory globs them alphabetically (add_label before create_sites). Load each
+        // file explicitly in dependency order instead.
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations/create_sites_table.php');
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations/add_label_to_sites_table.php');
+        $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
 
         // Clear the static properties before each test
         $reflection = new \ReflectionClass(FilamentMultisiteRouteServiceProvider::class);
@@ -32,6 +35,15 @@ class TestCase extends Orchestra
         $availablePrefixes->setAccessible(true);
         $availablePrefixes->setValue(null);
 
+        // Site caches resolved domains/locales in static properties that survive between
+        // tests (and are not keyed per domain), so reset them for isolation.
+        $siteReflection = new \ReflectionClass(Site::class);
+        foreach (['sitesForDomain', 'usingLocales'] as $property) {
+            $prop = $siteReflection->getProperty($property);
+            $prop->setAccessible(true);
+            $prop->setValue(null);
+        }
+
         require_once __DIR__ . '/../src/helpers.php';
 
         cache()->forget(FilamentMultisiteRouteServiceProvider::TRANSLATABLE_LOCALES_CACHE_KEY);
@@ -41,6 +53,7 @@ class TestCase extends Orchestra
     protected function getPackageProviders($app)
     {
         return [
+            \Spatie\Translatable\TranslatableServiceProvider::class,
             FilamentMultisiteServiceProvider::class,
             FilamentMultisiteRouteServiceProvider::class,
         ];
