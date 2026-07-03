@@ -139,16 +139,17 @@ class SiteManager
     public function getCurrentSite(): Site
     {
         if (! $this->currentSite) {
-            $url = parse_url(config('app.url'));
-            $defaultDomain = $url['host'] ?? null;
+            $defaultDomain = parse_url((string) config('app.url'), PHP_URL_HOST) ?: null;
 
-            $fallbackSite = Site::active()
-                ->where('prefix', null)
-                ->where(function ($query) use ($defaultDomain) {
-                    $query->where('domain', $defaultDomain)
-                        ->orWhereNull('domain');
-                })
-                ->first() ?? Site::active()->first();
+            // One query, resolve in memory (there are few sites): the flagged
+            // default first, then an unprefixed site on the app.url host / no
+            // domain, then any active site.
+            $activeSites = Site::active()->get();
+
+            $fallbackSite = $activeSites->first(fn (Site $site) => $site->is_default)
+                ?? $activeSites->first(fn (Site $site) => $site->prefix === null
+                    && ($site->domain === $defaultDomain || $site->domain === null))
+                ?? $activeSites->first();
 
             if (! $fallbackSite) {
                 throw new InvalidArgumentException('Site not found');
@@ -158,6 +159,14 @@ class SiteManager
         }
 
         return $this->currentSite;
+    }
+
+    /**
+     * The flagged default (original) site content is authored on, or null if none.
+     */
+    public function getDefaultSite(): ?Site
+    {
+        return Site::getDefault();
     }
 
     public function getCurrentSiteLocale(): string

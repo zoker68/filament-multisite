@@ -5,6 +5,7 @@ namespace Zoker\FilamentMultisite\Tests;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
 use Orchestra\Testbench\TestCase as Orchestra;
+use Spatie\Translatable\TranslatableServiceProvider;
 use Zoker\FilamentMultisite\Facades\SiteManager;
 use Zoker\FilamentMultisite\Models\Site;
 use Zoker\FilamentMultisite\Providers\FilamentMultisiteRouteServiceProvider;
@@ -23,6 +24,7 @@ class TestCase extends Orchestra
         // file explicitly in dependency order instead.
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations/create_sites_table.php');
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations/add_label_to_sites_table.php');
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations/add_is_default_to_sites_table.php');
         $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
 
         // Clear the static properties before each test
@@ -53,7 +55,7 @@ class TestCase extends Orchestra
     protected function getPackageProviders($app)
     {
         return [
-            \Spatie\Translatable\TranslatableServiceProvider::class,
+            TranslatableServiceProvider::class,
             FilamentMultisiteServiceProvider::class,
             FilamentMultisiteRouteServiceProvider::class,
         ];

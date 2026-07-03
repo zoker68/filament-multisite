@@ -18,9 +18,15 @@ class SiteFactory extends Factory
             'prefix' => $this->faker->slug,
             'locale' => $this->faker->locale,
             'is_active' => true,
+            'is_default' => false,
             'created_at' => now(),
             'updated_at' => now(),
         ];
+    }
+
+    public function default(): self
+    {
+        return $this->state(['is_default' => true]);
     }
 
     public function inactive(): self

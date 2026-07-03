@@ -20,6 +20,7 @@ use Zoker\FilamentMultisite\Observers\SiteObserver;
  * @property ?string $prefix
  * @property string $locale
  * @property bool $is_active
+ * @property bool $is_default
  * @property string $host_with_scheme
  * @property string $url
  */
@@ -33,7 +34,13 @@ class Site extends Model
 
     const string USING_LOCALES_CACHE_KEY = 'multisite::using_locales';
 
-    protected $fillable = ['code', 'name', 'label', 'domain', 'prefix', 'locale', 'is_active'];
+    protected $fillable = ['code', 'name', 'label', 'domain', 'prefix', 'locale', 'is_active', 'is_default'];
+
+    /** @var array<string, string> */
+    protected $casts = [
+        'is_active' => 'boolean',
+        'is_default' => 'boolean',
+    ];
 
     /** @var array<string> */
     private static ?array $usingLocales = null;
@@ -118,6 +125,14 @@ class Site extends Model
         }
 
         return self::$usingLocales;
+    }
+
+    /**
+     * The single "original" site content is authored on and translated out of.
+     */
+    public static function getDefault(): ?Site
+    {
+        return static::query()->where('is_default', true)->first();
     }
 
     public function clearCache(): void

@@ -60,6 +60,10 @@ class SiteResource extends Resource
 
                         Toggle::make('is_active')
                             ->label('Active'),
+
+                        Toggle::make('is_default')
+                            ->label('Default site')
+                            ->helperText('The original site content is authored on and translated out of. Only one site can be default.'),
                     ]),
 
                 Section::make('URL')
@@ -101,6 +105,10 @@ class SiteResource extends Resource
                 ToggleColumn::make('is_active')
                     ->label('Active')
                     ->searchable()
+                    ->sortable(),
+
+                ToggleColumn::make('is_default')
+                    ->label('Default')
                     ->sortable(),
             ])
             ->filters([
