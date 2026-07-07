@@ -7,6 +7,13 @@ function multisite_route(string $name, mixed $parameters = [], bool $absolute = 
 {
     $site ??= SiteManager::getCurrentSite();
 
+    // A site on its own domain must produce absolute URLs on THAT host (route()
+    // alone builds on the current request host). Build the relative path with the
+    // normal logic, then prepend the site's own scheme+domain.
+    if ($absolute && filled($site->domain)) {
+        return rtrim($site->hostWithScheme, '/') . multisite_route($name, $parameters, false, $site, $locale);
+    }
+
     $locale ??= $site->locale;
 
     $parameters = Arr::wrap($parameters);

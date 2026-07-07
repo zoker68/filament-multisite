@@ -265,17 +265,11 @@ Publish the configuration file:
 php artisan vendor:publish --tag=multisite-config
 ```
 
-Set up the canonical site in `config/multisite.php`:
-
-```php
-<?php
-
-return [
-    'canonical_site_id' => 1, // ID of the site to use as canonical
-];
-```
-
-If canonical_site_id = null is not set, canonical link will not be generated
+Canonical URLs are **self-canonical**: each page declares its own current-site URL
+as canonical (or a URL set explicitly via `AlternateLinks::setCanonicalUrl()`).
+Cross-language canonicals are intentionally never generated — they would drop the
+translated versions from the index; the language relationship is expressed via
+`hreflang` alternates (incl. `x-default` → the default site) instead.
 
 ### Programmatic Usage
 

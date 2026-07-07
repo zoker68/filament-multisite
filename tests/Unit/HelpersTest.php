@@ -130,6 +130,18 @@ class HelpersTest extends TestCase
         $this->assertEquals(config('app.url') . '/test', multisite_route('test.route'));
     }
 
+    public function test_it_builds_absolute_urls_on_the_site_own_domain()
+    {
+        $siteWithDomain = $this->createActiveSite(['prefix' => null, 'domain' => 'other.example']);
+
+        Route::get('branded', fn () => '')->name('branded.route');
+
+        // Absolute URL lands on the site's OWN domain, not the current request host.
+        $this->assertEquals('https://other.example/branded', multisite_route('branded.route', [], true, $siteWithDomain));
+        // Relative path is unchanged.
+        $this->assertEquals('/branded', multisite_route('branded.route', [], false, $siteWithDomain));
+    }
+
     public function test_it_handles_current_site_helper()
     {
         SiteManager::setCurrentSite($this->site);

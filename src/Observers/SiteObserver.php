@@ -43,6 +43,12 @@ class SiteObserver
             ->where('id', '!=', $site->id)
             ->where('is_default', true)
             ->update(['is_default' => false]);
+
+        // The mass update fires no observers; clear the per-domain site caches
+        // (no TTL) so a demoted default is not served stale on another domain.
+        Site::query()->distinct()->pluck('domain')->each(
+            fn ($domain) => cache()->forget(Site::SITES_FOR_DOMAIN_CACHE_KEY . $domain)
+        );
     }
 
     private function anotherDefaultExists(Site $site): bool

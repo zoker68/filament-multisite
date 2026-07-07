@@ -23,6 +23,7 @@ class AlternateLinks
     public static function set(array $links): void
     {
         static::$links = [];
+        static::$canonicalUrl = null;
         static::$initialized = true;
 
         foreach ($links as $data) {
@@ -46,6 +47,7 @@ class AlternateLinks
                 'url' => $item['url'],
                 'locale' => $item['site']->locale,
                 'isActive' => $item['site']->id === $currentSiteId,
+                'isDefault' => (bool) $item['site']->is_default,
             ]);
     }
 
@@ -62,24 +64,20 @@ class AlternateLinks
     }
 
     /**
-     * Generate canonical URL based on configuration
+     * Resolve the canonical URL: an explicitly set one wins, otherwise every page
+     * is self-canonical (its own current-site URL). Cross-language canonicals are
+     * intentionally never generated — they would drop translations from the index.
      */
     protected static function generateCanonicalUrl(): void
     {
-        // If canonical URL is already set, don't overwrite it
+        // An explicit per-page canonical (e.g. from an SEO/Meta block) wins.
         if (static::$canonicalUrl !== null) {
             return;
         }
 
-        $canonicalSiteId = config('multisite.canonical_site_id');
-
-        if (! $canonicalSiteId) {
-            static::$canonicalUrl = null;
-
-            return;
-        }
-
-        static::$canonicalUrl = static::$links[$canonicalSiteId]['url'] ?? null;
+        // Self-canonical: the current site's own URL, or the clean current request
+        // URL (no query string) when no alternates were set (e.g. utility pages).
+        static::$canonicalUrl = static::$links[SiteManager::getCurrentSiteId()]['url'] ?? url()->current();
     }
 
     public static function getCanonicalUrl(): ?string
@@ -91,7 +89,9 @@ class AlternateLinks
 
     public static function setCanonicalUrl(string $url): void
     {
-        if (empty($url) && trim($url) !== '') {
+        // Ignore blank values so an empty per-page canonical does not overwrite
+        // the resolved one (config / self).
+        if (trim($url) === '') {
             return;
         }
 
