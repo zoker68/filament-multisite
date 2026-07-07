@@ -30,7 +30,7 @@ class SitePicker extends Component
     {
         $this->items = AlternateLinks::get()->keyBy('site.id');
 
-        $sites = Site::getForDomain(SiteManager::getCurrentSite()->domain)
+        $sites = Site::getForGroup(SiteManager::getCurrentSite())
             ->map(fn (Site $site) => new SitePickerItem(
                 $site,
                 $this->items[$site->id]['url'] ?? $site->url,

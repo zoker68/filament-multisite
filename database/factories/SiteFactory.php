@@ -4,6 +4,7 @@ namespace Zoker\FilamentMultisite\Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Zoker\FilamentMultisite\Models\Site;
+use Zoker\FilamentMultisite\Models\SiteGroup;
 
 class SiteFactory extends Factory
 {
@@ -12,6 +13,7 @@ class SiteFactory extends Factory
     public function definition(): array
     {
         return [
+            'site_group_id' => null,
             'code' => $this->faker->unique()->slug,
             'name' => $this->faker->name,
             'label' => $this->faker->name,
@@ -27,6 +29,11 @@ class SiteFactory extends Factory
     public function default(): self
     {
         return $this->state(['is_default' => true]);
+    }
+
+    public function forGroup(int|SiteGroup $group): self
+    {
+        return $this->state(['site_group_id' => $group instanceof SiteGroup ? $group->id : $group]);
     }
 
     public function inactive(): self

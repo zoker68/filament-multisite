@@ -6,6 +6,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
@@ -53,6 +54,18 @@ class SiteResource extends Resource
                         TextInput::make('code')
                             ->required(),
 
+                        Select::make('site_group_id')
+                            ->label('Site group')
+                            ->relationship('group', 'name')
+                            ->required()
+                            ->searchable()
+                            ->preload()
+                            ->helperText('Sites in the same group are alternates of each other (hreflang, switcher), independent of domain.')
+                            ->createOptionForm([
+                                TextInput::make('name')->required(),
+                                TextInput::make('code'),
+                            ]),
+
                         TextInput::make('locale')
                             ->label('Locale')
                             ->required()
@@ -63,7 +76,7 @@ class SiteResource extends Resource
 
                         Toggle::make('is_default')
                             ->label('Default site')
-                            ->helperText('The original site content is authored on and translated out of. Only one site can be default.'),
+                            ->helperText('The original site of its group — content is authored there and translated out of it. One default per group.'),
                     ]),
 
                 Section::make('URL')
@@ -94,6 +107,10 @@ class SiteResource extends Resource
 
                 TextColumn::make('name')
                     ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('group.name')
+                    ->label('Group')
                     ->sortable(),
 
                 TextColumn::make('domain')

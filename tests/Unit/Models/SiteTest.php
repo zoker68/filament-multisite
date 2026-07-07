@@ -92,12 +92,13 @@ class SiteTest extends TestCase
     {
         $site = $this->createActiveSite(['domain' => 'a.example.com']);
 
-        cache()->put(Site::SITES_FOR_DOMAIN_CACHE_KEY . 'a.example.com', 'x');
+        $groupKey = Site::SITES_FOR_GROUP_CACHE_KEY . ($site->site_group_id ?? 'null');
+        cache()->put($groupKey, 'x');
         cache()->put(Site::USING_LOCALES_CACHE_KEY, 'x');
 
         $site->clearCache();
 
-        $this->assertFalse(cache()->has(Site::SITES_FOR_DOMAIN_CACHE_KEY . 'a.example.com'));
+        $this->assertFalse(cache()->has($groupKey));
         $this->assertFalse(cache()->has(Site::USING_LOCALES_CACHE_KEY));
     }
 }

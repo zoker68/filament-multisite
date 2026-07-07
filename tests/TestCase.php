@@ -25,6 +25,8 @@ class TestCase extends Orchestra
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations/create_sites_table.php');
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations/add_label_to_sites_table.php');
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations/add_is_default_to_sites_table.php');
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations/create_site_groups_table.php');
+        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations/add_site_group_id_to_sites_table.php');
         $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
 
         // Clear the static properties before each test
@@ -37,14 +39,16 @@ class TestCase extends Orchestra
         $availablePrefixes->setAccessible(true);
         $availablePrefixes->setValue(null);
 
-        // Site caches resolved domains/locales in static properties that survive between
-        // tests (and are not keyed per domain), so reset them for isolation.
+        // Site memoizes using-locales and per-group site lists in static properties that
+        // survive between tests, so reset them for isolation.
         $siteReflection = new \ReflectionClass(Site::class);
-        foreach (['sitesForDomain', 'usingLocales'] as $property) {
-            $prop = $siteReflection->getProperty($property);
-            $prop->setAccessible(true);
-            $prop->setValue(null);
-        }
+        $usingLocales = $siteReflection->getProperty('usingLocales');
+        $usingLocales->setAccessible(true);
+        $usingLocales->setValue(null);
+
+        $groupProp = $siteReflection->getProperty('sitesForGroup');
+        $groupProp->setAccessible(true);
+        $groupProp->setValue([]);
 
         require_once __DIR__ . '/../src/helpers.php';
 

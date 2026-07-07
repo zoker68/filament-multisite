@@ -162,11 +162,13 @@ class SiteManager
     }
 
     /**
-     * The flagged default (original) site content is authored on, or null if none.
+     * The default (original) site of a group — defaults to the current site's group.
      */
-    public function getDefaultSite(): ?Site
+    public function getDefaultSite(?Site $forSite = null): ?Site
     {
-        return Site::getDefault();
+        $forSite ??= $this->getCurrentSite();
+
+        return Site::getDefaultForGroup($forSite->site_group_id);
     }
 
     public function getCurrentSiteLocale(): string

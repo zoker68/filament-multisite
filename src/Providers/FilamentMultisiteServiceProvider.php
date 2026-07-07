@@ -16,6 +16,8 @@ class FilamentMultisiteServiceProvider extends PackageServiceProvider
                 'create_sites_table',
                 'add_label_to_sites_table',
                 'add_is_default_to_sites_table',
+                'create_site_groups_table',
+                'add_site_group_id_to_sites_table',
             ])
             ->hasViews('multisite')
             ->hasTranslations()

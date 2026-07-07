@@ -30,8 +30,8 @@ class SiteObserver
     }
 
     /**
-     * Exactly one site is the default: setting one clears the flag on the rest.
-     * Uses a query-builder update so it does not re-fire this observer.
+     * Exactly one default PER GROUP: flagging one clears the flag on the others in
+     * its group. Uses a query-builder update so it does not re-fire this observer.
      */
     private function enforceSingleDefault(Site $site): void
     {
@@ -40,36 +40,37 @@ class SiteObserver
         }
 
         Site::query()
+            ->inGroup($site->site_group_id)
             ->where('id', '!=', $site->id)
-            ->where('is_default', true)
+            ->default()
             ->update(['is_default' => false]);
 
-        // The mass update fires no observers; clear the per-domain site caches
-        // (no TTL) so a demoted default is not served stale on another domain.
-        Site::query()->distinct()->pluck('domain')->each(
-            fn ($domain) => cache()->forget(Site::SITES_FOR_DOMAIN_CACHE_KEY . $domain)
-        );
+        // The mass update fires no observers; clear this group's cache (no TTL) so the
+        // demoted default's stale cached is_default doesn't drive a wrong hreflang x-default.
+        cache()->forget(Site::SITES_FOR_GROUP_CACHE_KEY . ($site->site_group_id ?? 'null'));
     }
 
     private function anotherDefaultExists(Site $site): bool
     {
         return Site::query()
+            ->inGroup($site->site_group_id)
             ->where('id', '!=', $site->id ?? 0)
-            ->where('is_default', true)
+            ->default()
             ->exists();
     }
 
     public function deleting(Site $site): void
     {
-        // Deleting the default reassigns it to another active site (an unprefixed
-        // one first) so a default always exists.
+        // Deleting a group's default reassigns it to another active site in the SAME
+        // group (an unprefixed one first) so each group always has a default.
         if (! $site->is_default) {
             return;
         }
 
         Site::query()
+            ->inGroup($site->site_group_id)
             ->where('id', '!=', $site->id)
-            ->where('is_active', true)
+            ->active()
             ->orderByRaw('CASE WHEN prefix IS NULL THEN 0 ELSE 1 END')
             ->orderBy('id')
             ->first()
