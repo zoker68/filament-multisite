@@ -56,6 +56,12 @@ class TestCase extends Orchestra
         cache()->forget(FilamentMultisiteRouteServiceProvider::MULTISITE_AVAILABLE_PREFIXES_CACHE_KEY);
     }
 
+    protected function getEnvironmentSetUp($app)
+    {
+        // The `web` middleware group (EncryptCookies / StartSession) needs an app key.
+        $app['config']->set('app.key', 'base64:' . base64_encode(str_repeat('z', 32)));
+    }
+
     protected function getPackageProviders($app)
     {
         return [

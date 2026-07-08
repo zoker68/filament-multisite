@@ -2,6 +2,7 @@
 
 namespace Zoker\FilamentMultisite\Providers;
 
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -22,6 +23,19 @@ class FilamentMultisiteRouteServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Site resolution must run on every web request — including Livewire's
+        // `/livewire/update` endpoint, which lives on the `web` group but outside
+        // the `Route::multisite()` macro. Registering it here means integrators
+        // don't have to remember to append it in bootstrap/app.php; without it the
+        // current site silently falls back to the default on Livewire requests.
+        //
+        // Must go through the HTTP kernel (not the router's pushMiddlewareToGroup):
+        // the kernel re-syncs its own middleware-group definitions to the router on
+        // bootstrap, which would otherwise clobber a router-only push. Laravel
+        // de-duplicates middleware per route, so this is safe alongside the macro's
+        // own MultisiteMiddleware.
+        $this->app->make(HttpKernel::class)->appendMiddlewareToGroup('web', MultisiteMiddleware::class);
+
         Route::macro('multisite', function (\Closure $routes) {
             Route::middleware(MultisiteMiddleware::class)->group(function () use ($routes) {
 
