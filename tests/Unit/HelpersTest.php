@@ -142,6 +142,54 @@ class HelpersTest extends TestCase
         $this->assertEquals('/branded', multisite_route('branded.route', [], false, $siteWithDomain));
     }
 
+    public function test_it_resolves_names_taken_from_a_prefixed_request_for_other_sites()
+    {
+        $otherPrefixed = $this->createActiveSite(['prefix' => 'zz', 'locale' => 'zz']);
+        $noPrefix = $this->createActiveSite(['prefix' => null]);
+
+        // Being on a prefixed site sets URL::defaults(multisite_prefix) to ITS prefix —
+        // exactly the state where alternate links used to leak the current prefix.
+        SiteManager::setCurrentSite($this->site);
+
+        // request()->route()->getName() on a prefixed site returns "multisite.test.route".
+        $this->assertEquals(
+            config('app.url') . '/zz/test',
+            multisite_route('multisite.test.route', [], true, $otherPrefixed)
+        );
+
+        $this->assertEquals(
+            config('app.url') . '/test',
+            multisite_route('multisite.test.route', [], true, $noPrefix)
+        );
+
+        $this->assertEquals(
+            config('app.url') . '/' . $this->site->prefix . '/test',
+            multisite_route('multisite.test.route', [], true, $this->site)
+        );
+    }
+
+    public function test_it_resolves_names_taken_from_a_translated_request_for_other_sites()
+    {
+        $site2 = $this->createActiveSite(['prefix' => 'zz', 'locale' => 'zz']);
+
+        Lang::addLines(['tests.route' => 'path'], $this->site->locale);
+        Lang::addLines(['tests.route' => 'pot'], 'zz');
+
+        Route::multisite(function () {
+            Route::translated(function () {
+                Route::get(__('tests.route'), fn () => '')->name('trans.route');
+            });
+        });
+
+        SiteManager::setCurrentSite($this->site);
+
+        // Current route name on a prefixed translated route: "multisite.{locale}.trans.route".
+        $this->assertEquals(
+            config('app.url') . '/zz/pot',
+            multisite_route('multisite.' . $this->site->locale . '.trans.route', [], true, $site2)
+        );
+    }
+
     public function test_it_handles_current_site_helper()
     {
         SiteManager::setCurrentSite($this->site);

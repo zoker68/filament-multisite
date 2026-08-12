@@ -2,6 +2,7 @@
 
 use Zoker\FilamentMultisite\Facades\SiteManager;
 use Zoker\FilamentMultisite\Models\Site;
+use Zoker\FilamentMultisite\Providers\FilamentMultisiteRouteServiceProvider;
 
 function multisite_route(string $name, mixed $parameters = [], bool $absolute = true, ?Site $site = null, ?string $locale = null): string
 {
@@ -12,6 +13,20 @@ function multisite_route(string $name, mixed $parameters = [], bool $absolute = 
     // normal logic, then prepend the site's own scheme+domain.
     if ($absolute && filled($site->domain)) {
         return rtrim($site->hostWithScheme, '/') . multisite_route($name, $parameters, false, $site, $locale);
+    }
+
+    // The name may come from an already-resolved route (request()->route()->getName()),
+    // which on a prefixed site is "multisite.cart" and on a translated route
+    // "{locale}.cart". Strip those macro-generated prefixes back to the base name —
+    // the resolution below re-adds them per target site. Without this nothing matches,
+    // and the final route() fallback lets URL::defaults() fill multisite_prefix with
+    // the CURRENT site's prefix, so links for every other site point back to the
+    // current one.
+    $name = Str::chopStart($name, 'multisite.');
+    $firstSegment = Str::before($name, '.');
+    if ($firstSegment !== $name
+        && in_array($firstSegment, FilamentMultisiteRouteServiceProvider::getRouteTranslatableLocales(), true)) {
+        $name = Str::after($name, '.');
     }
 
     $locale ??= $site->locale;
@@ -36,13 +51,6 @@ function multisite_route(string $name, mixed $parameters = [], bool $absolute = 
 
     if ($site->prefix && Route::has('multisite.' . $name)) {
         return route('multisite.' . $name, $parameters, $absolute);
-    }
-
-    if (! $site->prefix) {
-        $nameWithoutLocalePrefix = ltrim($name, 'multisite.');
-        if (Route::has($nameWithoutLocalePrefix) && $nameWithoutLocalePrefix != $name) {
-            return route($nameWithoutLocalePrefix, $parameters, $absolute);
-        }
     }
 
     // No multisite/locale variant matched, so this is a plain route that does not use the
