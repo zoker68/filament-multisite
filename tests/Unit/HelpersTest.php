@@ -195,4 +195,22 @@ class HelpersTest extends TestCase
         SiteManager::setCurrentSite($this->site);
         $this->assertEquals($this->site, currentSite());
     }
+
+    public function test_base_name_strips_the_macro_prefixes(): void
+    {
+        // The current site's locale is what Route::translated() prefixes route names with.
+        $locale = $this->site->locale;
+
+        $this->assertSame('cart', multisite_route_base_name('cart'));
+        $this->assertSame('cart', multisite_route_base_name('multisite.cart'));
+        $this->assertSame('cart', multisite_route_base_name($locale . '.cart'));
+        $this->assertSame('cart', multisite_route_base_name('multisite.' . $locale . '.cart'));
+        $this->assertSame('checkout.shipping', multisite_route_base_name('multisite.' . $locale . '.checkout.shipping'));
+    }
+
+    public function test_base_name_keeps_segments_that_are_not_a_site_locale(): void
+    {
+        $this->assertSame('account.orders.show', multisite_route_base_name('account.orders.show'));
+        $this->assertSame('xx.cart', multisite_route_base_name('multisite.xx.cart'));
+    }
 }

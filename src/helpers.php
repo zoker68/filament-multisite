@@ -16,18 +16,10 @@ function multisite_route(string $name, mixed $parameters = [], bool $absolute = 
     }
 
     // The name may come from an already-resolved route (request()->route()->getName()),
-    // which on a prefixed site is "multisite.cart" and on a translated route
-    // "{locale}.cart". Strip those macro-generated prefixes back to the base name —
-    // the resolution below re-adds them per target site. Without this nothing matches,
-    // and the final route() fallback lets URL::defaults() fill multisite_prefix with
-    // the CURRENT site's prefix, so links for every other site point back to the
-    // current one.
-    $name = Str::chopStart($name, 'multisite.');
-    $firstSegment = Str::before($name, '.');
-    if ($firstSegment !== $name
-        && in_array($firstSegment, FilamentMultisiteRouteServiceProvider::getRouteTranslatableLocales(), true)) {
-        $name = Str::after($name, '.');
-    }
+    // which carries the macro prefixes. The resolution below re-adds them per target site;
+    // without stripping nothing matches and the final route() fallback lets URL::defaults()
+    // fill multisite_prefix with the CURRENT site's prefix, so every site links back to it.
+    $name = multisite_route_base_name($name);
 
     $locale ??= $site->locale;
 
@@ -58,6 +50,23 @@ function multisite_route(string $name, mixed $parameters = [], bool $absolute = 
     unset($parameters['multisite_prefix']);
 
     return route($name, $parameters, $absolute);
+}
+
+/**
+ * Strip the prefixes the Route::multisite() / Route::translated() macros add to a route name:
+ * "multisite.cart", "ru.cart" and "multisite.ru.cart" all mean "cart".
+ */
+function multisite_route_base_name(string $name): string
+{
+    $name = Str::chopStart($name, 'multisite.');
+    $firstSegment = Str::before($name, '.');
+
+    if ($firstSegment !== $name
+        && in_array($firstSegment, FilamentMultisiteRouteServiceProvider::getRouteTranslatableLocales(), true)) {
+        return Str::after($name, '.');
+    }
+
+    return $name;
 }
 
 function currentSite(): Site
