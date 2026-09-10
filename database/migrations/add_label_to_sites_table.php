@@ -15,7 +15,7 @@ return new class extends Migration
             }
         });
 
-        Site::all()->each(function (Site $site) {
+        Site::query()->withoutGlobalScopes()->each(function (Site $site) {
             $site->label = $site->name;
             $site->save();
         });
