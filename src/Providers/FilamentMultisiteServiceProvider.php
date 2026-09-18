@@ -20,7 +20,6 @@ class FilamentMultisiteServiceProvider extends PackageServiceProvider
                 'add_site_group_id_to_sites_table',
             ])
             ->hasViews('multisite')
-            ->hasTranslations()
             ->hasConfigFile();
     }
 

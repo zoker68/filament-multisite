@@ -21,7 +21,7 @@ Tests use Orchestra Testbench + Pest 4; `tests/TestCase.php` registers the provi
 ## Architecture
 
 Two providers (`src/Providers/`):
-- **`FilamentMultisiteServiceProvider`** (Spatie `PackageServiceProvider`) — migrations (`sites` table + columns), views, translations, config, helpers; sets the Spatie Translatable fallback locale.
+- **`FilamentMultisiteServiceProvider`** (Spatie `PackageServiceProvider`) — migrations (`sites` table + columns), views, config, helpers; sets the Spatie Translatable fallback locale.
 - **`FilamentMultisiteRouteServiceProvider`** (plain `ServiceProvider`) — registers `Route::multisite()` (site-prefixed URLs) and `Route::translated()` (localized routes) macros; caches available prefixes/locales (3h TTL).
 
 `src/` highlights: `Models/Site` (`getForDomain()`, soft deletes, locales) · `Services/` `SiteManager` + `FilamentSiteManager` · `Traits/` `HasMultisite` (global `site_id` scope), `HasMultisiteResource`, `Translatable/*` (Spatie Translatable wiring for Filament Create/Edit/List) · `Filament/Resources/Sites/` (CRUD) · `Http/Middleware/` `MultisiteMiddleware`, `SetFilamentLocale` · `View/Components/` `SitePicker`, `AlternateLinksHead` · `Facades/`, `DTO/`, `Events/SiteChanged`, `Observers/SiteObserver`. The `Multisite.php` class is the Filament plugin entry.

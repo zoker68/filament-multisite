@@ -30,7 +30,7 @@ The package provides:
 2. **Publish and run migrations**
 
    ```bash
-   php artisan vendor:publish --tag=filament-multisite-migrations
+   php artisan vendor:publish --tag=multisite-migrations
    php artisan migrate
    ```
 
