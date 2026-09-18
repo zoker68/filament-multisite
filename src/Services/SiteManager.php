@@ -138,6 +138,16 @@ class SiteManager
 
     public function getCurrentSite(): Site
     {
+        return $this->getCurrentSiteOrNull() ?? throw new InvalidArgumentException('Site not found');
+    }
+
+    /**
+     * The current site, or null when there is none to resolve — for callers that can
+     * work without a site (a console command, a request outside any site, an empty
+     * sites table) and must not be interrupted by an exception.
+     */
+    public function getCurrentSiteOrNull(): ?Site
+    {
         if (! $this->currentSite) {
             $defaultDomain = parse_url((string) config('app.url'), PHP_URL_HOST) ?: null;
 
@@ -152,7 +162,7 @@ class SiteManager
                 ?? $activeSites->first();
 
             if (! $fallbackSite) {
-                throw new InvalidArgumentException('Site not found');
+                return null;
             }
 
             $this->setCurrentSite($fallbackSite);
