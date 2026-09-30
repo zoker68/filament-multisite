@@ -14,7 +14,7 @@ The package provides:
 ## Requirements
 
 - PHP 8.4+
-- Laravel 12+
+- Laravel 13.17+
 - Filament 4+ (for admin panel integration)
 
 ---
@@ -66,10 +66,10 @@ Route::multisite(function () {
 
 ### Translatable routes
 
-Use the `translatable` macro for localized paths. Translation keys should be placed in your application's `resources/lang` directory:
+Use the `translated` macro for localized paths. Translation keys should be placed in your application's `resources/lang` directory:
 
 ```php
-Route::translatable(function () {
+Route::translated(function () {
     Route::get(__('routes.about'), [AboutController::class, 'index'])->name('about');
 });
 ```
@@ -233,7 +233,7 @@ Schema::table('your_table', function (Blueprint $table) {
 
 ## Alternate Links & Canonical URLs
 
-The package provides automatic generation of alternate links and canonical URLs for SEO optimization.
+The package outputs the canonical URL and the `hreflang` alternates of the current page.
 
 ### Frontend Components
 
@@ -246,8 +246,8 @@ Include alternate links in your HTML head section:
 ```
 
 This will generate:
-- `<link rel="canonical">` for the specified canonical site (if configured)
-- `<link rel="alternate" hreflang="...">` for all available sites
+- `<link rel="canonical">` — the page's own current-site URL (see below)
+- `<link rel="alternate" hreflang="...">` for every alternate site, plus `hreflang="x-default"` → the default site of the group
 
 #### Site Picker
 
@@ -257,16 +257,33 @@ Display a site/language switcher component:
 <x-multisite::sitePicker />
 ```
 
-### Configuration
+### Automatic alternates
 
-Publish the configuration file:
+When nothing called `AlternateLinks::set()` during the request, the alternates are derived from the
+current route: every **active** site of the current site's **group** gets the same route with the same
+parameters, built by `multisite_route()`:
 
-```bash
-php artisan vendor:publish --tag=multisite-config
-```
+- a prefixed site gets its `multisite.*` variant (`/en/page/about`), a site on its own domain an absolute
+  URL on that host, and a `Route::translated()` route the path of the target site's locale;
+- route parameters are carried over (models via `getRouteKey()`), the query string is dropped;
+- a site whose variant of the route is not registered (e.g. a prefixed site added after the routes were
+  registered or cached) is skipped rather than linked to another site's URL. With `Route::translated()`
+  this includes a locale whose path translates to the same string as another locale's (or has no
+  translation and falls back to it): Laravel keeps only the last route registered for a URI.
+
+Only routes registered inside `Route::multisite()` / `Route::translated()` get automatic alternates — the
+macros mark their routes with route metadata (`$route->getMetadata('multisite_route')`, or
+`FilamentMultisiteRouteServiceProvider::isMultisiteRoute($route)`). Plain `web` routes (`/admin`,
+`/livewire/update`, your own routes outside the macros), unnamed and fallback routes, unmatched URLs and
+error pages (404 / 500 rendered through the exception handler) get no alternates.
+
+The state is reset by `MultisiteMiddleware` at the start of every request, so it does not leak between
+requests on Octane.
+
+### Canonical URL
 
 Canonical URLs are **self-canonical**: each page declares its own current-site URL
-as canonical (or a URL set explicitly via `AlternateLinks::setCanonicalUrl()`).
+(without the query string) as canonical, or a URL set explicitly via `AlternateLinks::setCanonicalUrl()`.
 Cross-language canonicals are intentionally never generated — they would drop the
 translated versions from the index; the language relationship is expressed via
 `hreflang` alternates (incl. `x-default` → the default site) instead.
@@ -275,29 +292,38 @@ translated versions from the index; the language relationship is expressed via
 
 #### Setting Alternate Links
 
+An explicit `set()` always wins over the automatic alternates. It is only needed when the sites' URLs
+cannot be derived from the route — e.g. translated slugs, so each site has a different path — or when
+only some sites have the page:
+
 ```php
 use Zoker\FilamentMultisite\Services\AlternateLinks;
 
-// Set alternate links in your controller
 public function show(Category $category)
 {
     $links = [];
-    foreach ($sites as $site) {
+    foreach ($category->translations as $translation) {
         $links[] = [
-            'site' => $site,
-            'url' => localized_url_for_site($site),
+            'site' => $translation->site,
+            'url' => multisite_route('category.show', ['category' => $translation->slug], site: $translation->site),
         ];
     }
     AlternateLinks::set($links);
-    
+
     return view('category.show', compact('category'));
 }
+```
+
+#### Disabling alternates on a page
+
+```php
+AlternateLinks::set([]); // no hreflang on this page, the self-canonical stays
 ```
 
 #### Custom Canonical URL
 
 ```php
-// Set a custom canonical URL (overrides config)
+// Set a custom canonical URL
 AlternateLinks::setCanonicalUrl('https://example.com/custom-url');
 
 // Get the current canonical URL

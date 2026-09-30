@@ -21,35 +21,61 @@ function multisite_route(string $name, mixed $parameters = [], bool $absolute = 
     // fill multisite_prefix with the CURRENT site's prefix, so every site links back to it.
     $name = multisite_route_base_name($name);
 
-    $locale ??= $site->locale;
-
     $parameters = Arr::wrap($parameters);
 
     if ($site->prefix) {
         $parameters['multisite_prefix'] = $site->prefix;
     }
 
-    if ($locale && $site->prefix && Route::has('multisite.' . $locale . '.' . $name)) {
-        return route('multisite.' . $locale . '.' . $name, $parameters, $absolute);
-    } elseif ($locale && Route::has($locale . '.' . $name)) {
-        return route($locale . '.' . $name, $parameters, $absolute);
-    }
-
-    if ($site->prefix && Route::has('multisite.' . $site->locale . '.' . $name)) {
-        return route('multisite.' . $site->locale . '.' . $name, $parameters, $absolute);
-    } elseif (Route::has($site->locale . '.' . $name)) {
-        return route($site->locale . '.' . $name, $parameters, $absolute);
-    }
-
-    if ($site->prefix && Route::has('multisite.' . $name)) {
-        return route('multisite.' . $name, $parameters, $absolute);
-    }
+    $routeName = multisite_route_name($name, $site, $locale) ?? $name;
 
     // No multisite/locale variant matched, so this is a plain route that does not use the
     // multisite_prefix segment. Drop it to avoid leaking it as a ?multisite_prefix query string.
-    unset($parameters['multisite_prefix']);
+    if ($routeName === $name) {
+        unset($parameters['multisite_prefix']);
+    }
 
-    return route($name, $parameters, $absolute);
+    return route($routeName, $parameters, $absolute);
+}
+
+/**
+ * The registered route multisite_route() builds for the site: its multisite/locale variant,
+ * or the plain route. Null when none of them is registered.
+ */
+function multisite_route_name(string $name, Site $site, ?string $locale = null): ?string
+{
+    $name = multisite_route_base_name($name);
+    $locale ??= $site->locale;
+
+    $candidates = [];
+
+    if ($locale) {
+        if ($site->prefix) {
+            $candidates[] = 'multisite.' . $locale . '.' . $name;
+        }
+
+        $candidates[] = $locale . '.' . $name;
+    }
+
+    if ($site->prefix) {
+        $candidates[] = 'multisite.' . $site->locale . '.' . $name;
+    }
+
+    $candidates[] = $site->locale . '.' . $name;
+
+    if ($site->prefix) {
+        $candidates[] = 'multisite.' . $name;
+    }
+
+    $candidates[] = $name;
+
+    foreach ($candidates as $candidate) {
+        if (Route::has($candidate)) {
+            return $candidate;
+        }
+    }
+
+    return null;
 }
 
 /**

@@ -2,12 +2,16 @@
 
 namespace Zoker\FilamentMultisite\Providers;
 
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
+use Illuminate\Foundation\Exceptions\Handler;
+use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Zoker\FilamentMultisite\Http\Middleware\MultisiteMiddleware;
 use Zoker\FilamentMultisite\Models\Site;
+use Zoker\FilamentMultisite\Services\AlternateLinks;
 
 class FilamentMultisiteRouteServiceProvider extends ServiceProvider
 {
@@ -20,6 +24,9 @@ class FilamentMultisiteRouteServiceProvider extends ServiceProvider
     const string TRANSLATABLE_LOCALES_CACHE_KEY = 'multisite::translatable-locales';
 
     const string MULTISITE_AVAILABLE_PREFIXES_CACHE_KEY = 'multisite::available-prefixes';
+
+    /** Route metadata key set by the Route::multisite() / Route::translated() macros. */
+    const string ROUTE_METADATA_KEY = 'multisite_route';
 
     public function boot(): void
     {
@@ -36,31 +43,49 @@ class FilamentMultisiteRouteServiceProvider extends ServiceProvider
         // own MultisiteMiddleware.
         $this->app->make(HttpKernel::class)->appendMiddlewareToGroup('web', MultisiteMiddleware::class);
 
+        // Error pages render inside the matched route: no alternates derived from it.
+        $this->callAfterResolving(ExceptionHandler::class, function (ExceptionHandler $handler): void {
+            if ($handler instanceof Handler) {
+                $handler->renderable(function (\Throwable $e): void {
+                    AlternateLinks::set([]);
+                });
+            }
+        });
+
         Route::macro('multisite', function (\Closure $routes) {
-            Route::middleware(MultisiteMiddleware::class)->group(function () use ($routes) {
+            Route::middleware(MultisiteMiddleware::class)
+                ->metadata([FilamentMultisiteRouteServiceProvider::ROUTE_METADATA_KEY => true])
+                ->group(function () use ($routes) {
 
-                $availablePrefixes = FilamentMultisiteRouteServiceProvider::getMultisiteAvailablePrefixes();
-                if (is_array($availablePrefixes) && count($availablePrefixes)) {
-                    Route::prefix('{multisite_prefix}')
-                        ->name('multisite.')
-                        ->whereIn('multisite_prefix', $availablePrefixes)
-                        ->group($routes);
-                }
+                    $availablePrefixes = FilamentMultisiteRouteServiceProvider::getMultisiteAvailablePrefixes();
+                    if (is_array($availablePrefixes) && count($availablePrefixes)) {
+                        Route::prefix('{multisite_prefix}')
+                            ->name('multisite.')
+                            ->whereIn('multisite_prefix', $availablePrefixes)
+                            ->group($routes);
+                    }
 
-                $routes(); // Normal Routes without multisite prefix
-            });
+                    $routes(); // Normal Routes without multisite prefix
+                });
         });
 
         Route::macro('translated', function (\Closure $routes) {
-            Route::middleware(MultisiteMiddleware::class)->group(function () use ($routes) {
-                foreach (FilamentMultisiteRouteServiceProvider::getRouteTranslatableLocales() as $locale) {
-                    app()->setLocale($locale);
+            Route::middleware(MultisiteMiddleware::class)
+                ->metadata([FilamentMultisiteRouteServiceProvider::ROUTE_METADATA_KEY => true])
+                ->group(function () use ($routes) {
+                    foreach (FilamentMultisiteRouteServiceProvider::getRouteTranslatableLocales() as $locale) {
+                        app()->setLocale($locale);
 
-                    Route::name($locale . '.')->group($routes);
-                }
-            });
+                        Route::name($locale . '.')->group($routes);
+                    }
+                });
         });
 
+    }
+
+    public static function isMultisiteRoute(RoutingRoute $route): bool
+    {
+        return $route->getMetadata(self::ROUTE_METADATA_KEY) === true;
     }
 
     /** @return array<string> */

@@ -12,7 +12,7 @@ use Zoker\FilamentMultisite\Services\AlternateLinks;
 
 class AlternateLinksHead extends Component
 {
-    /** @var Collection<int, array{site: Site, url: string, locale: string, isActive: bool}> */
+    /** @var Collection<int, array{site: Site, url: string, locale: string, isActive: bool, isDefault: bool}> */
     public Collection $items {
         get {
             return AlternateLinks::get();

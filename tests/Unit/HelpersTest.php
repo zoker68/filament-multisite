@@ -213,4 +213,22 @@ class HelpersTest extends TestCase
         $this->assertSame('account.orders.show', multisite_route_base_name('account.orders.show'));
         $this->assertSame('xx.cart', multisite_route_base_name('multisite.xx.cart'));
     }
+
+    public function test_route_name_resolves_the_variant_multisite_route_builds(): void
+    {
+        $unprefixed = $this->createActiveSite(['prefix' => null]);
+        // ->name() runs after the route is added; the router refreshes the lookups only on dispatch.
+        Route::getRoutes()->refreshNameLookups();
+
+        $this->assertSame('multisite.test.route', multisite_route_name('test.route', $this->site));
+        $this->assertSame('multisite.test.route', multisite_route_name('multisite.test.route', $this->site));
+        $this->assertSame('test.route', multisite_route_name('multisite.test.route', $unprefixed));
+    }
+
+    public function test_route_name_is_null_when_nothing_is_registered(): void
+    {
+        Route::getRoutes()->refreshNameLookups();
+
+        $this->assertNull(multisite_route_name('missing.route', $this->site));
+    }
 }

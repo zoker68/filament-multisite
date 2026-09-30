@@ -6,11 +6,14 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Symfony\Component\HttpFoundation\Response;
 use Zoker\FilamentMultisite\Facades\SiteManager;
+use Zoker\FilamentMultisite\Services\AlternateLinks;
 
 class MultisiteMiddleware
 {
     public function handle(Request $request, \Closure $next): Response
     {
+        AlternateLinks::clear();
+
         SiteManager::setCurrentSiteByRequest($request);
 
         /** @var Route $route */

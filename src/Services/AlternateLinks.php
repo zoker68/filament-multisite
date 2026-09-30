@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace Zoker\FilamentMultisite\Services;
 
+use Illuminate\Http\Request;
+use Illuminate\Routing\Exceptions\UrlGenerationException;
+use Illuminate\Routing\Route;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Route as RouteFacade;
 use Zoker\FilamentMultisite\Facades\SiteManager;
 use Zoker\FilamentMultisite\Models\Site;
+use Zoker\FilamentMultisite\Providers\FilamentMultisiteRouteServiceProvider;
 
 class AlternateLinks
 {
@@ -16,6 +22,8 @@ class AlternateLinks
     protected static ?string $canonicalUrl = null;
 
     protected static bool $initialized = false;
+
+    protected static bool $fallbackResolved = false;
 
     /**
      * @param  array<int, array{site: Site, url: string}>  $links
@@ -35,10 +43,12 @@ class AlternateLinks
     }
 
     /**
-     * @return Collection<int, array{site: Site, url: string, locale: string, isActive: bool}>
+     * @return Collection<int, array{site: Site, url: string, locale: string, isActive: bool, isDefault: bool}>
      */
     public static function get(): Collection
     {
+        static::resolveFallback();
+
         $currentSiteId = SiteManager::getCurrentSiteId();
 
         return collect(static::$links)
@@ -61,6 +71,70 @@ class AlternateLinks
         static::$links = [];
         static::$canonicalUrl = null;
         static::$initialized = false;
+        static::$fallbackResolved = false;
+    }
+
+    /**
+     * Nobody called set() for this request: the sites of the current group get the same
+     * route with the same parameters, for routes registered by Route::multisite() /
+     * Route::translated() only.
+     */
+    protected static function resolveFallback(): void
+    {
+        if (static::$initialized || static::$fallbackResolved) {
+            return;
+        }
+
+        static::$fallbackResolved = true;
+
+        $route = request()->route();
+
+        if (! $route instanceof Route
+            || $route->isFallback
+            || $route->getName() === null
+            || ! FilamentMultisiteRouteServiceProvider::isMultisiteRoute($route)) {
+            return;
+        }
+
+        $currentSite = SiteManager::getCurrentSiteOrNull();
+
+        if ($currentSite === null) {
+            return;
+        }
+
+        $parameters = Arr::except($route->parameters(), 'multisite_prefix');
+
+        foreach (Site::getForGroup($currentSite) as $site) {
+            $url = static::routeUrlForSite($route->getName(), $parameters, $site);
+
+            if ($url !== null) {
+                static::$links[$site->id] = ['site' => $site, 'url' => $url];
+            }
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $parameters
+     */
+    protected static function routeUrlForSite(string $name, array $parameters, Site $site): ?string
+    {
+        $siteRouteName = multisite_route_name($name, $site);
+
+        // A prefixed site without its multisite.* variant would get another site's URL.
+        if ($siteRouteName === null || ($site->prefix && ! str_starts_with($siteRouteName, 'multisite.'))) {
+            return null;
+        }
+
+        try {
+            $url = multisite_route($name, $parameters, true, $site);
+        } catch (UrlGenerationException) {
+            return null;
+        }
+
+        // The prefix constraint is fixed at route registration: a site added later gets a 404 URL.
+        $siteRoute = RouteFacade::getRoutes()->getByName($siteRouteName);
+
+        return $siteRoute?->matches(Request::create($url), false) ? $url : null;
     }
 
     /**
@@ -82,6 +156,7 @@ class AlternateLinks
 
     public static function getCanonicalUrl(): ?string
     {
+        static::resolveFallback();
         static::generateCanonicalUrl();
 
         return static::$canonicalUrl;

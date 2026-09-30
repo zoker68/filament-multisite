@@ -25,7 +25,7 @@ class SiteGroup extends Model
     /**
      * @return HasMany<Site, $this>
      */
-    public function sites(): HasMany // @phpstan-ignore-line
+    public function sites(): HasMany
     {
         return $this->hasMany(Site::class);
     }

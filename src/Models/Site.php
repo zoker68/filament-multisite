@@ -47,7 +47,7 @@ class Site extends Model
     /** @var array<string> */
     private static ?array $usingLocales = null;
 
-    /** @var array<string, Collection<int, Site>> */
+    /** @var array<int|string, Collection<int, Site>> */
     private static array $sitesForGroup = [];
 
     public static function setUsingLocales(): void
@@ -89,7 +89,7 @@ class Site extends Model
     /**
      * @return BelongsTo<SiteGroup, $this>
      */
-    public function group(): BelongsTo // @phpstan-ignore-line
+    public function group(): BelongsTo
     {
         return $this->belongsTo(SiteGroup::class, 'site_group_id');
     }
