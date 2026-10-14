@@ -1,6 +1,12 @@
 # Changelog
 
-## 2.5.0 — 2026-09-30
+## 2.5.1 — 2026-10-14
+
+### Fixed
+
+- `Site::getUsingLocales()` returns a list: when several sites shared a locale, the array kept gaps in its
+  keys (`[0 => 'en', 2 => 'de']`) and `json_encode` turned it into an object. A value cached by an older
+  version is re-indexed on read, so no `cache:clear` is needed after the update.
 
 ### Added
 
