@@ -44,7 +44,7 @@ class Site extends Model
         'is_default' => 'boolean',
     ];
 
-    /** @var array<string> */
+    /** @var list<string>|null */
     private static ?array $usingLocales = null;
 
     /** @var array<int|string, Collection<int, Site>> */
@@ -53,7 +53,7 @@ class Site extends Model
     public static function setUsingLocales(): void
     {
         if (cache()->has(self::USING_LOCALES_CACHE_KEY)) {
-            self::$usingLocales = cache()->get(self::USING_LOCALES_CACHE_KEY);
+            self::$usingLocales = array_values(cache()->get(self::USING_LOCALES_CACHE_KEY));
 
             return;
         }
@@ -64,7 +64,7 @@ class Site extends Model
             return;
         }
 
-        self::$usingLocales = self::pluck('locale')->unique()->toArray();
+        self::$usingLocales = self::pluck('locale')->unique()->values()->all();
         cache()->put(self::USING_LOCALES_CACHE_KEY, self::$usingLocales);
     }
 
@@ -132,7 +132,7 @@ class Site extends Model
     }
 
     /**
-     * @return array<string>
+     * @return list<string>
      */
     public static function getUsingLocales(): array
     {

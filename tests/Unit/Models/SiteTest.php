@@ -75,6 +75,27 @@ class SiteTest extends TestCase
         $this->assertEquals(['en', 'ru'], $locales);
     }
 
+    public function test_get_using_locales_returns_a_list_when_a_locale_is_shared()
+    {
+        Site::truncate();
+        $this->createActiveSite(['locale' => 'en']);
+        $this->createActiveSite(['locale' => 'en']);
+        $this->createActiveSite(['locale' => 'de']);
+
+        $locales = Site::getUsingLocales();
+
+        $this->assertSame(['en', 'de'], $locales);
+        $this->assertTrue(array_is_list($locales));
+        $this->assertSame('["en","de"]', json_encode($locales));
+    }
+
+    public function test_get_using_locales_reindexes_a_gapped_cached_value()
+    {
+        cache()->put(Site::USING_LOCALES_CACHE_KEY, [0 => 'en', 2 => 'de']);
+
+        $this->assertSame(['en', 'de'], Site::getUsingLocales());
+    }
+
     public function test_get_for_domain_returns_only_active_sites_for_the_domain()
     {
         Site::truncate();
